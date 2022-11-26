@@ -10,7 +10,7 @@ setup(
     ext_modules=[
         Extension(
             name="fimdlp",
-            sources=["fimdlp/cfimdlp.pyx", "fimdlp/FImdlp.cpp"],  
+            sources=["cfimdlp.pyx", "FImdlp.cpp"],  
             language="c++",
             include_dirs=["fimdlp"],
         ),
