@@ -96,8 +96,17 @@ class FImdlp(TransformerMixin, BaseEstimator):
                 "Shape of input is different from what was seen" "in `fit`"
             )
         print("Cut points for each feature in Iris dataset:")
-        for i in range(0, self.n_features_):
-            data = np.sort(X[:, i])
-            Xcutpoints = self.discretizer_.cut_points(data, self.y_)
+        yz = self.y_.copy()
+        xz = X[:, 0].copy()
+        xzz = self.discretizer_.sort_vectors(xz, yz)
+        print("Xz: ", xz)
+        print("Yz: ", yz)
+        print("Xzz: ", xzz)
+        print("Solución:")
+        print("Xz*: ", np.sort(X[:, 0]))
+        print("yz*: ", yz[np.argsort(X[:, 0])])
+        for i in range(0, 1):  # self.n_features_):
+            datax = np.sort(X[:, i])
+            Xcutpoints = self.discretizer_.cut_points(datax, self.y_)
             print(f"{self.features_[i]:20s}: {Xcutpoints}")
         return X

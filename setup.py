@@ -10,9 +10,13 @@ setup(
     ext_modules=[
         Extension(
             name="cppfimdlp",
-            sources=["fimdlp/cfimdlp.pyx", "fimdlp/CPPFImdlp.cpp"],
+            sources=[
+                "fimdlp/cfimdlp.pyx",
+                "fimdlp/CPPFImdlp.cpp",
+            ],
             language="c++",
             include_dirs=["fimdlp"],
+            extra_compile_args=["-std=c++20"],
         ),
     ]
 )
