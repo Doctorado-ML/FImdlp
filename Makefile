@@ -4,7 +4,8 @@ SHELL := /bin/bash
 
 clean: ## Clean up
 	rm -rf build dist *.egg-info
-	for name in fimdlp/cfimdlp.cpp fimdlp/fimdlp.cpython-310-darwin.so;do if [ -f $name ]; then rm $name; fi; done
+	if [ -f fimdlp/cfimdlp.cpp ]; then rm fimdlp/cfimdlp.cpp; fi;
+	if [ -f fimdlp/cppfimdlp.cpython-310-darwin.so ]; then rm fimdlp/cppfimdlp.cpython-310-darwin.so; fi;
 
 lint:  ## Lint and static-check
 	black fimdlp
@@ -21,7 +22,9 @@ build:  ## Build package
 buildext:  ## Build extension
 	rm -fr dist/*
 	rm -fr build/*
+	make clean
 	python setup.py build_ext
+	echo "Build extension success"; mv build/lib.macosx-12-x86_64-cpython-310/cppfimdlp.cpython-310-darwin.so fimdlp;
 
 audit: ## Audit pip
 	pip-audit
