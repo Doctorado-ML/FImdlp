@@ -1,13 +1,13 @@
-#include "FImdlp.h"
-namespace FImdlp
+#include "CPPFImdlp.h"
+namespace CPPFImdlp
 {
-    FImdlp::FImdlp()
+    CPPFImdlp::CPPFImdlp()
     {
     }
-    FImdlp::~FImdlp()
+    CPPFImdlp::~CPPFImdlp()
     {
     }
-    std::vector<float> FImdlp::cutPoints(std::vector<int> &X, std::vector<int> &y)
+    std::vector<float> CPPFImdlp::cutPoints(std::vector<int> &X, std::vector<int> &y)
     {
         std::vector<float> cutPts;
         int i, ant = X.at(0);

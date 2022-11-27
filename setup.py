@@ -9,24 +9,10 @@ from setuptools import Extension, setup
 setup(
     ext_modules=[
         Extension(
-            name="fimdlp",
-            sources=["fimdlp/cfimdlp.pyx", "fimdlp/FImdlp.cpp"],  
+            name="cppfimdlp",
+            sources=["fimdlp/cfimdlp.pyx", "fimdlp/CPPFImdlp.cpp"],
             language="c++",
             include_dirs=["fimdlp"],
         ),
     ]
 )
-
-# from Cython.Build import cythonize
-# setup(
-#     ext_modules=cythonize(
-#         Extension(
-#             "fimdlp", 
-#             sources=["fimdlp/cfimdlp.pyx", "fimdlp/FImdlp.cpp"],  
-#             language="c++", 
-#             include_dirs=["fimdlp"], 
-#         ),
-#         include_path=["./fimdlp"],
-#     )
-# )
-

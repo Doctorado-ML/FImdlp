@@ -1,14 +1,14 @@
-#ifndef FIMDLP_H
-#define FIMDLP_H
+#ifndef CPPFIMDLP_H
+#define CPPFIMDLP_H
 #include <vector>
 #include <Python.h>
-namespace FImdlp
+namespace CPPFImdlp
 {
-    class FImdlp
+    class CPPFImdlp
     {
     public:
-        FImdlp();
-        ~FImdlp();
+        CPPFImdlp();
+        ~CPPFImdlp();
         std::vector<float> cutPoints(std::vector<int> &, std::vector<int> &);
     };
 }

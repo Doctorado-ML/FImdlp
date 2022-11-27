@@ -16,8 +16,12 @@ push:  ## Push code with tags
 build:  ## Build package
 	rm -fr dist/*
 	rm -fr build/*
-	#python setup.py build_ext
 	python -m build
+
+buildext:  ## Build extension
+	rm -fr dist/*
+	rm -fr build/*
+	python setup.py build_ext
 
 audit: ## Audit pip
 	pip-audit

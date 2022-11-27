@@ -2,15 +2,15 @@
 # cython: language_level = 3
 from libcpp.vector cimport vector
 
-cdef extern from "FImdlp.h" namespace "FImdlp":
-    cdef cppclass FImdlp:
-        FImdlp() except + 
+cdef extern from "CPPFImdlp.h" namespace "CPPFImdlp":
+    cdef cppclass CPPFImdlp:
+        CPPFImdlp() except + 
         vector[float] cutPoints(vector[int]&, vector[int]&)
 
 cdef class CFImdlp:
-    cdef FImdlp *thisptr
+    cdef CPPFImdlp *thisptr
     def __cinit__(self):
-        self.thisptr = new FImdlp()
+        self.thisptr = new CPPFImdlp()
     def __dealloc__(self):
         del self.thisptr
     def cut_points(self, X, y):
