@@ -19,9 +19,6 @@ class FImdlp(TransformerMixin, BaseEstimator):
         The number of features of the data passed to :meth:`fit`.
     """
 
-    def __init__(self):
-        pass
-
     def _check_params_fit(self, X, y, expected_args, kwargs):
         """Check the common parameters passed to fit"""
         # Check that X and y have correct shape
@@ -93,7 +90,7 @@ class FImdlp(TransformerMixin, BaseEstimator):
         # during fit.
         if X.shape[1] != self.n_features_:
             raise ValueError(
-                "Shape of input is different from what was seen" "in `fit`"
+                "Shape of input is different from what was seen in `fit`"
             )
         print("Cut points for each feature in Iris dataset:")
         yz = self.y_.copy()

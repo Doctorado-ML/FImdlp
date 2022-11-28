@@ -8,12 +8,17 @@ namespace CPPFImdlp
     class CPPFImdlp
     {
     private:
-        std::vector<size_t> sortIndices(std::vector<float> &);
+        bool debug;
+        int precision;
+        float divider;
+        std::vector<size_t>
+        sortIndices(std::vector<float> &);
 
     public:
         CPPFImdlp();
+        CPPFImdlp(int, bool debug = false);
         ~CPPFImdlp();
-        std::vector<double> cutPoints(std::vector<float> &, std::vector<int> &);
+        std::vector<float> cutPoints(std::vector<float> &, std::vector<int> &);
     };
 }
 #endif
