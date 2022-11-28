@@ -95,13 +95,21 @@ class FImdlp(TransformerMixin, BaseEstimator):
         print("Cut points for each feature in Iris dataset:")
         yz = self.y_.copy()
         xz = X[:, 0].copy()
-        print("Xz: ", xz)
-        print("Yz: ", yz)
-        print("Solución:")
-        print("Xz*: ", np.sort(X[:, 0]))
-        print("yz*: ", yz[np.argsort(X[:, 0])])
+        xz = xz[np.argsort(X[:, 0])]
+        yz = yz[np.argsort(X[:, 0])]
+        cuts = []
+        for i in range(1, len(yz)):
+            if yz[i] != yz[i - 1] and xz[i - 1] < xz[i]:
+                print(f"Cut point: ({xz[i-1]}, {xz[i]}) ({yz[i-1]}, {yz[i]})")
+                cuts.append((xz[i] + xz[i - 1]) / 2)
         for i in range(0, 1):  # self.n_features_):
             datax = np.sort(X[:, i])
             Xcutpoints = self.discretizer_.cut_points(datax, self.y_)
             print(f"{self.features_[i]:20s}: {Xcutpoints}")
+        print("Solución cut_points: ", cuts)
+        print(xz)
+        print("***********")
+        for i in range(0, len(yz)):
+            print(f"({xz[i]}, {yz[i]})")
+        print("***********")
         return X

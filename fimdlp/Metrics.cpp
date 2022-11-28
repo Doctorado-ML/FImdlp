@@ -4,7 +4,7 @@ namespace CPPFImdlp
     Metrics::Metrics()
     {
     }
-    int Metrics::numClasses(std::vector<int> &y, std::vector<size_t> indices, int start, int end)
+    int Metrics::numClasses(std::vector<int> &y, std::vector<size_t> indices, size_t start, size_t end)
     {
         int nClasses = 1;
         int yAnt = y.at(start);
@@ -18,7 +18,7 @@ namespace CPPFImdlp
         }
         return nClasses;
     }
-    float Metrics::entropy(std::vector<int> &y, std::vector<size_t> &indices, int start, int end, int nClasses)
+    float Metrics::entropy(std::vector<int> &y, std::vector<size_t> &indices, size_t start, size_t end, int nClasses)
     {
         float entropy = 0;
         int nElements = 0;
@@ -38,7 +38,7 @@ namespace CPPFImdlp
         }
         return entropy;
     }
-    float Metrics::informationGain(std::vector<int> &y, std::vector<size_t> &indices, int start, int end, int cutPoint, int nClasses)
+    float Metrics::informationGain(std::vector<int> &y, std::vector<size_t> &indices, size_t start, size_t end, size_t cutPoint, int nClasses)
     {
         float iGain = 0.0;
         float entropy, entropyLeft, entropyRight;

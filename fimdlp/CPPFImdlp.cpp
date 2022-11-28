@@ -1,6 +1,7 @@
 #include "CPPFImdlp.h"
 #include <numeric>
 #include <iostream>
+#include <stdio.h>
 #include "Metrics.h"
 namespace CPPFImdlp
 {
@@ -20,7 +21,8 @@ namespace CPPFImdlp
         std::vector<float> cutPts;
         std::vector<int> cutIdx;
         float xPrev, cutPoint;
-        int yPrev, idxPrev;
+        int yPrev;
+        size_t idxPrev;
         std::vector<size_t> indices = sortIndices(X);
         xPrev = X.at(indices[0]);
         yPrev = y.at(indices[0]);
@@ -34,7 +36,7 @@ namespace CPPFImdlp
             //  Definition 2 Cut points are always on boundaries
             if (y.at(*index) != yPrev && xPrev < X.at(*index))
             {
-                cutPoint = round((X.at(*index) + xPrev) / 2 * divider) / divider;
+                cutPoint = round(divider * (X.at(*index) + xPrev) / 2) / divider;
                 if (debug)
                 {
                     std::cout << "Cut point: " << (xPrev + X.at(*index)) / 2 << " //";
@@ -57,6 +59,13 @@ namespace CPPFImdlp
             std::cout << *cutPoint << " -> " << Metrics::informationGain(y, indices, 0, indices.size(), *cutPoint, nc) << std::endl;
             //  << Metrics::informationGain(y, 0, y.size(), *cutPoint, Metrics::numClasses(y, 0, y.size())) << std::endl;
         }
+        std::cout << "+++++++++++++++++++++++" << std::endl;
+        for (size_t i = 0; i < y.size(); i++)
+        {
+            printf("(%3.1f, %d)\n", X[indices.at(i)], y[indices.at(i)]);
+        }
+        std::cout << "+++++++++++++++++++++++" << std::endl;
+
         return cutPts;
     }
     // Argsort from https://stackoverflow.com/questions/1577475/c-sorting-and-keeping-track-of-indexes

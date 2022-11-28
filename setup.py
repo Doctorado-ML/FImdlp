@@ -17,7 +17,7 @@ setup(
             ],
             language="c++",
             include_dirs=["fimdlp"],
-            extra_compile_args=["-std=c++20"],
+            extra_compile_args=["-std=c++2a"],
         ),
     ]
 )
