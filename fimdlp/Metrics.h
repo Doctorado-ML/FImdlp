@@ -9,8 +9,9 @@ namespace CPPFImdlp
     {
     public:
         Metrics();
-        static float entropy(std::vector<int> &, int, int, int);
-        static int numClasses(std::vector<int> &);
+        static int numClasses(std::vector<int> &, std::vector<size_t>, int, int);
+        static float entropy(std::vector<int> &, std::vector<size_t> &, int, int, int);
+        static float informationGain(std::vector<int> &y, std::vector<size_t> &indices, int start, int end, int cutPoint, int nClasses);
     };
 }
 #endif

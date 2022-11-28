@@ -18,14 +18,16 @@ namespace CPPFImdlp
     std::vector<float> CPPFImdlp::cutPoints(std::vector<float> &X, std::vector<int> &y)
     {
         std::vector<float> cutPts;
+        std::vector<int> cutIdx;
         float xPrev, cutPoint;
-        int yPrev;
+        int yPrev, idxPrev;
         std::vector<size_t> indices = sortIndices(X);
         xPrev = X.at(indices[0]);
         yPrev = y.at(indices[0]);
+        idxPrev = indices[0];
         if (debug)
         {
-            std::cout << "Entropy: " << Metrics::entropy(y, 0, y.size(), Metrics::numClasses(y)) << std::endl;
+            std::cout << "Entropy: " << Metrics::entropy(y, indices, 0, y.size(), Metrics::numClasses(y, indices, 0, indices.size())) << std::endl;
         }
         for (auto index = indices.begin(); index != indices.end(); ++index)
         {
@@ -37,12 +39,23 @@ namespace CPPFImdlp
                 {
                     std::cout << "Cut point: " << (xPrev + X.at(*index)) / 2 << " //";
                     std::cout << X.at(*index) << " -> " << y.at(*index) << " yPrev= " << yPrev;
-                    std::cout << "* (" << X.at(*index) << ", " << xPrev << ")=" << ((X.at(*index) + xPrev) / 2) << std::endl;
+                    std::cout << "* (" << X.at(*index) << ", " << xPrev << ")="
+                              << ((X.at(*index) + xPrev) / 2) << "idxPrev"
+                              << idxPrev << std::endl;
                 }
                 cutPts.push_back(cutPoint);
+                cutIdx.push_back(idxPrev);
             }
             xPrev = X.at(*index);
             yPrev = y.at(*index);
+            idxPrev = *index;
+        }
+        std::cout << "Information Gain:" << std::endl;
+        auto nc = Metrics::numClasses(y, indices, 0, indices.size());
+        for (auto cutPoint = cutIdx.begin(); cutPoint != cutIdx.end(); ++cutPoint)
+        {
+            std::cout << *cutPoint << " -> " << Metrics::informationGain(y, indices, 0, indices.size(), *cutPoint, nc) << std::endl;
+            //  << Metrics::informationGain(y, 0, y.size(), *cutPoint, Metrics::numClasses(y, 0, y.size())) << std::endl;
         }
         return cutPts;
     }
