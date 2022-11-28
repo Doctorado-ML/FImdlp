@@ -2,6 +2,7 @@
 #include <numeric>
 #include <iostream>
 #include <stdio.h>
+#include <algorithm>
 #include "Metrics.h"
 namespace CPPFImdlp
 {
