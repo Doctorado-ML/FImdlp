@@ -53,20 +53,6 @@ namespace CPPFImdlp
             yPrev = y.at(*index);
             idxPrev = *index;
         }
-        std::cout << "Information Gain:" << std::endl;
-        auto nc = Metrics::numClasses(y, indices, 0, indices.size());
-        for (auto cutPoint = cutIdx.begin(); cutPoint != cutIdx.end(); ++cutPoint)
-        {
-            std::cout << *cutPoint << " -> " << Metrics::informationGain(y, indices, 0, indices.size(), *cutPoint, nc) << std::endl;
-            //  << Metrics::informationGain(y, 0, y.size(), *cutPoint, Metrics::numClasses(y, 0, y.size())) << std::endl;
-        }
-        std::cout << "+++++++++++++++++++++++" << std::endl;
-        for (size_t i = 0; i < y.size(); i++)
-        {
-            printf("(%3.1f, %d)\n", X[indices.at(i)], y[indices.at(i)]);
-        }
-        std::cout << "+++++++++++++++++++++++" << std::endl;
-
         return cutPts;
     }
     // Argsort from https://stackoverflow.com/questions/1577475/c-sorting-and-keeping-track-of-indexes
