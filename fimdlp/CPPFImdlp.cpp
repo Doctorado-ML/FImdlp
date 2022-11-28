@@ -1,6 +1,7 @@
 #include "CPPFImdlp.h"
 #include <numeric>
 #include <iostream>
+#include "Metrics.h"
 namespace CPPFImdlp
 {
     CPPFImdlp::CPPFImdlp() : debug(false), precision(6)
@@ -17,33 +18,35 @@ namespace CPPFImdlp
     std::vector<float> CPPFImdlp::cutPoints(std::vector<float> &X, std::vector<int> &y)
     {
         std::vector<float> cutPts;
-        float antx, cutPoint;
-        int anty;
+        float xPrev, cutPoint;
+        int yPrev;
         std::vector<size_t> indices = sortIndices(X);
-        antx = X.at(indices[0]);
-        anty = y.at(indices[0]);
+        xPrev = X.at(indices[0]);
+        yPrev = y.at(indices[0]);
+        if (debug)
+        {
+            std::cout << "Entropy: " << Metrics::entropy(y, 0, y.size(), Metrics::numClasses(y)) << std::endl;
+        }
         for (auto index = indices.begin(); index != indices.end(); ++index)
         {
-            // std::cout << X.at(*index) << " -> " << y.at(*index) << " // ";
             //  Definition 2 Cut points are always on boundaries
-            if (y.at(*index) != anty && antx < X.at(*index))
-            //  Weka implementation
-            // if (antx < X.at(*index))
+            if (y.at(*index) != yPrev && xPrev < X.at(*index))
             {
-                cutPoint = round((X.at(*index) + antx) / 2 * divider) / divider;
+                cutPoint = round((X.at(*index) + xPrev) / 2 * divider) / divider;
                 if (debug)
                 {
-                    std::cout << "Cut point: " << (antx + X.at(*index)) / 2 << " //";
-                    std::cout << X.at(*index) << " -> " << y.at(*index) << " anty= " << anty;
-                    std::cout << "* (" << X.at(*index) << ", " << antx << ")=" << ((X.at(*index) + antx) / 2) << std::endl;
+                    std::cout << "Cut point: " << (xPrev + X.at(*index)) / 2 << " //";
+                    std::cout << X.at(*index) << " -> " << y.at(*index) << " yPrev= " << yPrev;
+                    std::cout << "* (" << X.at(*index) << ", " << xPrev << ")=" << ((X.at(*index) + xPrev) / 2) << std::endl;
                 }
                 cutPts.push_back(cutPoint);
             }
-            antx = X.at(*index);
-            anty = y.at(*index);
+            xPrev = X.at(*index);
+            yPrev = y.at(*index);
         }
         return cutPts;
     }
+    // Argsort from https://stackoverflow.com/questions/1577475/c-sorting-and-keeping-track-of-indexes
     std::vector<size_t> CPPFImdlp::sortIndices(std::vector<float> &X)
     {
         std::vector<size_t> idx(X.size());
