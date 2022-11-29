@@ -21,48 +21,47 @@ namespace CPPFImdlp
     {
         std::vector<float> cutPts;
         std::vector<size_t> cutIdx;
-        float xPrev, cutPoint, curx;
-        int yPrev, cury;
-        size_t idxPrev, idx;
-        bool first = true;
+        float xPrev, xCur, xPivot, cutPoint;
+        int yPrev, yCur, yPivot;
+        size_t idxPrev, idx, numElements;
         std::vector<size_t> indices = sortIndices(X);
-        xPrev = X.at(indices.at(0));
-        yPrev = y.at(indices.at(0));
-        idxPrev = indices.at(0);
+        xCur = xPrev = X.at(indices.at(0));
+        yCur = yPrev = y.at(indices.at(0));
+        numElements = indices.size() - 1;
+        // idxPrev = indices.at(0);
         idx = 0;
-        while (idx < indices.size() - 1)
+        if (debug)
+            printf("*idx=%lu -> (-1, -1) Prev(%3.1f, %d) Elementos: %lu\n", idx, xCur, yCur, numElements);
+        while (idx < numElements)
         {
-            if (first)
-            {
-                first = false;
-                curx = X.at(indices.at(idx));
-                cury = y.at(indices.at(idx));
-            }
+            xPivot = xCur;
+            yPivot = yCur;
             if (debug)
-                printf("<idx=%lu -> (%3.1f, %d) Prev(%3.1f, %d)\n", idx, curx, cury, xPrev, yPrev);
+                printf("<idx=%lu -> Prev(%3.1f, %d) Pivot(%3.1f, %d) Cur(%3.1f, %d) \n", idx, xPrev, yPrev, xPivot, yPivot, xCur, yCur);
             // Read the same values and check class changes
-            while (idx < indices.size() - 1 && curx == xPrev)
+            do
             {
                 idx++;
-                curx = X.at(indices.at(idx));
-                cury = y.at(indices.at(idx));
-                if (cury != yPrev && curx == xPrev)
+                xCur = X.at(indices.at(idx));
+                yCur = y.at(indices.at(idx));
+                if (yCur != yPivot && xCur == xPivot)
                 {
-                    yPrev = -1;
+                    yPivot = -1;
                 }
                 if (debug)
-                    printf(">idx=%lu -> (%3.1f, %d) Prev(%3.1f, %d)\n", idx, curx, cury, xPrev, yPrev);
-            }
-            if (yPrev == -1 || yPrev != cury)
+                    printf(">idx=%lu -> Prev(%3.1f, %d) Pivot(%3.1f, %d) Cur(%3.1f, %d) \n", idx, xPrev, yPrev, xPivot, yPivot, xCur, yCur);
+            } while (idx < numElements && xCur == xPivot);
+            if (yPivot == -1 || yPrev != yCur)
             {
-                cutPoint = (xPrev + curx) / 2;
-                printf("Cutpoint (%3.1f, %d) -> (%3.1f, %d) = %3.1f", xPrev, yPrev, curx, cury, cutPoint);
+                cutPoint = (xPrev + xCur) / 2;
+                if (debug)
+                    printf("Cutpoint idx=%lu Cur(%3.1f, %d) Prev(%3.1f, %d) Pivot(%3.1f, %d) = %3.1f \n", idx, xCur, yCur, xPrev, yPrev, xPivot, yPivot, cutPoint);
                 cutPts.push_back(cutPoint);
-                cutIdx.push_back(idxPrev);
+                // cutIdx.push_back(idxPrev);
             }
-            yPrev = cury;
-            xPrev = curx;
-            idxPrev = indices.at(idx);
+            yPrev = yPivot;
+            xPrev = xPivot;
+            // idxPrev = indices.at(idxPivot);
         }
         return cutPts;
     }

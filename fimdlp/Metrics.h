@@ -1,8 +1,6 @@
 #ifndef METRICS_H
 #define METRICS_H
 #include <vector>
-#include <Python.h>
-#include <utility>
 namespace CPPFImdlp
 {
     class Metrics

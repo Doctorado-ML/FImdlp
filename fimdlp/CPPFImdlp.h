@@ -1,7 +1,6 @@
 #ifndef CPPFIMDLP_H
 #define CPPFIMDLP_H
 #include <vector>
-#include <Python.h>
 #include <utility>
 namespace CPPFImdlp
 {

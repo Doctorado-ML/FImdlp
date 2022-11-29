@@ -61,7 +61,7 @@ class FImdlp(TransformerMixin, BaseEstimator):
         self.n_features_ = X.shape[1]
         self.X_ = X
         self.y_ = y
-        self.discretizer_ = CFImdlp(debug=True)
+        self.discretizer_ = CFImdlp(debug=False)
         return self
 
     def transform(self, X):
@@ -108,7 +108,13 @@ class FImdlp(TransformerMixin, BaseEstimator):
             datax = self.X_[np.argsort(self.X_[:, i]), i]
             y_ = self.y_[np.argsort(self.X_[:, i])]
             Xcutpoints = self.discretizer_.cut_points(datax, y_)
-            print(f"New:{self.features_[i]:20s}: {Xcutpoints}")
+            print(
+                f"New ({len(Xcutpoints)}):{self.features_[i]:20s}: "
+                f"{Xcutpoints}"
+            )
             Xcutpoints = self.discretizer_.cut_points_ant(datax, y_)
-            print(f"Ant:{self.features_[i]:20s}: {Xcutpoints}")
+            print(
+                f"Ant ({len(Xcutpoints)}):{self.features_[i]:20s}: "
+                f"{Xcutpoints}"
+            )
         return X
