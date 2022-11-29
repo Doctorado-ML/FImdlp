@@ -19,6 +19,7 @@ namespace CPPFImdlp
         CPPFImdlp(int, bool debug = false);
         ~CPPFImdlp();
         std::vector<float> cutPoints(std::vector<float> &, std::vector<int> &);
+        std::vector<float> cutPointsAnt(std::vector<float> &, std::vector<int> &);
     };
 }
 #endif

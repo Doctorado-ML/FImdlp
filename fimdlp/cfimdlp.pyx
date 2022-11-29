@@ -8,6 +8,7 @@ cdef extern from "CPPFImdlp.h" namespace "CPPFImdlp":
         CPPFImdlp() except + 
         CPPFImdlp(int, bool) except + 
         vector[float] cutPoints(vector[float]&, vector[int]&)
+        vector[float] cutPointsAnt(vector[float]&, vector[int]&)
 
 cdef class CFImdlp:
     cdef CPPFImdlp *thisptr
@@ -17,3 +18,5 @@ cdef class CFImdlp:
         del self.thisptr
     def cut_points(self, X, y):
         return self.thisptr.cutPoints(X, y)
+    def cut_points_ant(self, X, y):
+        return self.thisptr.cutPointsAnt(X, y)

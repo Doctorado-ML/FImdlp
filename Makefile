@@ -24,7 +24,9 @@ buildext:  ## Build extension
 	rm -fr build/*
 	make clean
 	python setup.py build_ext
-	echo "Build extension success"; mv build/lib.macosx-12-x86_64-cpython-310/cppfimdlp.cpython-310-darwin.so fimdlp;
+	echo "Build extension success"
+	if [ -f build/lib.macosx-12-x86_64-cpython-310/cppfimdlp.cpython-310-darwin.so ] ; then mv build/lib.macosx-12-x86_64-cpython-310/cppfimdlp.cpython-310-darwin.so fimdlp; fi
+	if [ -f build/lib.macosx-10.9-universal2-3.10/cppfimdlp.cpython-310-darwin.so ] ; then mv build/lib.macosx-10.9-universal2-3.10/cppfimdlp.cpython-310-darwin.so fimdlp; fi
 
 audit: ## Audit pip
 	pip-audit

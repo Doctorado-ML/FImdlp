@@ -20,6 +20,55 @@ namespace CPPFImdlp
     std::vector<float> CPPFImdlp::cutPoints(std::vector<float> &X, std::vector<int> &y)
     {
         std::vector<float> cutPts;
+        std::vector<size_t> cutIdx;
+        float xPrev, cutPoint, curx;
+        int yPrev, cury;
+        size_t idxPrev, idx;
+        bool first = true;
+        std::vector<size_t> indices = sortIndices(X);
+        xPrev = X.at(indices.at(0));
+        yPrev = y.at(indices.at(0));
+        idxPrev = indices.at(0);
+        idx = 0;
+        while (idx < indices.size() - 1)
+        {
+            if (first)
+            {
+                first = false;
+                curx = X.at(indices.at(idx));
+                cury = y.at(indices.at(idx));
+            }
+            if (debug)
+                printf("<idx=%lu -> (%3.1f, %d) Prev(%3.1f, %d)\n", idx, curx, cury, xPrev, yPrev);
+            // Read the same values and check class changes
+            while (idx < indices.size() - 1 && curx == xPrev)
+            {
+                idx++;
+                curx = X.at(indices.at(idx));
+                cury = y.at(indices.at(idx));
+                if (cury != yPrev && curx == xPrev)
+                {
+                    yPrev = -1;
+                }
+                if (debug)
+                    printf(">idx=%lu -> (%3.1f, %d) Prev(%3.1f, %d)\n", idx, curx, cury, xPrev, yPrev);
+            }
+            if (yPrev == -1 || yPrev != cury)
+            {
+                cutPoint = (xPrev + curx) / 2;
+                printf("Cutpoint (%3.1f, %d) -> (%3.1f, %d) = %3.1f", xPrev, yPrev, curx, cury, cutPoint);
+                cutPts.push_back(cutPoint);
+                cutIdx.push_back(idxPrev);
+            }
+            yPrev = cury;
+            xPrev = curx;
+            idxPrev = indices.at(idx);
+        }
+        return cutPts;
+    }
+    std::vector<float> CPPFImdlp::cutPointsAnt(std::vector<float> &X, std::vector<int> &y)
+    {
+        std::vector<float> cutPts;
         std::vector<int> cutIdx;
         float xPrev, cutPoint;
         int yPrev;
