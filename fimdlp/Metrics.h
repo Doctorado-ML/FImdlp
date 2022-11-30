@@ -1,6 +1,7 @@
 #ifndef METRICS_H
 #define METRICS_H
 #include <vector>
+#include <cmath>
 namespace CPPFImdlp
 {
     class Metrics

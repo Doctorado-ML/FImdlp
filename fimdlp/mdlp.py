@@ -105,8 +105,10 @@ class FImdlp(TransformerMixin, BaseEstimator):
         print("Cuts calculados en C++")
         print("Cut points for each feature in Iris dataset:")
         for i in range(0, self.n_features_):
-            datax = self.X_[np.argsort(self.X_[:, i]), i]
-            y_ = self.y_[np.argsort(self.X_[:, i])]
+            # datax = self.X_[np.argsort(self.X_[:, i]), i]
+            # y_ = self.y_[np.argsort(self.X_[:, i])]
+            datax = self.X_[:, i]
+            y_ = self.y_
             Xcutpoints = self.discretizer_.cut_points(datax, y_)
             print(
                 f"New ({len(Xcutpoints)}):{self.features_[i]:20s}: "

@@ -8,7 +8,15 @@ X = data.data
 y = data.target
 features = data.feature_names
 test = FImdlp()
-test.fit(X, y, features=features).transform(X)
+test.fit(X, y, features=features)
+# test.transform(X)
+
+test = CFImdlp(debug=False)
+# k = test.cut_points(X[:, 0], y)
+# print(k)
+# k = test.cut_points_ant(X[:, 0], y)
+# print(k)
+test.debug_points(X[:, 0], y)
 
 # X = np.array(
 #     [

@@ -4,6 +4,11 @@
 #include <utility>
 namespace CPPFImdlp
 {
+    struct CutPointBody
+    {
+        size_t start, end;
+        float fromValue, toValue;
+    };
     class CPPFImdlp
     {
     private:
@@ -17,8 +22,9 @@ namespace CPPFImdlp
         CPPFImdlp();
         CPPFImdlp(int, bool debug = false);
         ~CPPFImdlp();
-        std::vector<float> cutPoints(std::vector<float> &, std::vector<int> &);
+        std::vector<CutPointBody> cutPoints(std::vector<float> &, std::vector<int> &);
         std::vector<float> cutPointsAnt(std::vector<float> &, std::vector<int> &);
+        void debugPoints(std::vector<float> &, std::vector<int> &);
     };
 }
 #endif
