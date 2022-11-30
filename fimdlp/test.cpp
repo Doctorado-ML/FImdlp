@@ -1,17 +1,17 @@
 #include "CPPFImdlp.h"
 #include <iostream>
 
-using namespace std;
+using namespace mdlp;
 int main(int argc, char *argv[], char *envp[])
 {
     {
-        CPPFImdlp::CPPFImdlp fimdlp = CPPFImdlp::CPPFImdlp(true);
-        vector<float> X = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-        vector<int> y = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-        vector<float> cutPts = fimdlp.cutPoints(X, y);
-        for (auto &cutPt : cutPts)
+        CPPFImdlp fimdlp = CPPFImdlp(true);
+        std::vector<float> X = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        std::vector<int> y = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+        fimdlp.computeCutPoints(X, y);
+        for (struct CutPointBody cutPt : fimdlp.getCutPoints())
         {
-            cout << cutPt << endl;
+            std::cout << cutPt << std::endl;
         }
         return 0;
     }

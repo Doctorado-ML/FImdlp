@@ -1,5 +1,5 @@
 #include "Metrics.h"
-namespace CPPFImdlp
+namespace mdlp
 {
     Metrics::Metrics()
     {

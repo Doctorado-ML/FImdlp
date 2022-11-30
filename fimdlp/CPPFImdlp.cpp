@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <algorithm>
 #include "Metrics.h"
-namespace CPPFImdlp
+namespace mdlp
 {
     std::ostream &operator<<(std::ostream &os, const CutPointBody &cut)
     {
@@ -23,6 +23,10 @@ namespace CPPFImdlp
     CPPFImdlp::~CPPFImdlp()
     {
     }
+    std::vector<CutPointBody> CPPFImdlp::getCutPoints()
+    {
+        return cutPoints;
+    }
     void CPPFImdlp::debugPoints(std::vector<float> &X, std::vector<int> &y)
     {
         std::cout << "+++++++++++++++++++++++" << std::endl;
@@ -33,12 +37,13 @@ namespace CPPFImdlp
             printf("(%3lu, %3lu) -> (%3.1f, %d)\n", i, indices[i], X[indices[i]], y[indices[i]]);
         }
         std::cout << "+++++++++++++++++++++++" << std::endl;
-        for (auto item : cutPoints(X, y))
+        computeCutPoints(X, y);
+        for (auto item : cutPoints)
         {
             std::cout << item << "  X[" << item.end << "]=" << X[item.end] << std::endl;
         }
     }
-    std::vector<CutPointBody> CPPFImdlp::cutPoints(std::vector<float> &X, std::vector<int> &y)
+    void CPPFImdlp::computeCutPoints(std::vector<float> &X_, std::vector<int> &y_)
     {
 
         std::vector<CutPointBody> cutPts;
@@ -47,7 +52,9 @@ namespace CPPFImdlp
         float xPrev, xCur, xPivot;
         int yPrev, yCur, yPivot;
         size_t idxPrev, idxPivot, idx, numElements, start;
-        std::vector<size_t> indices = sortIndices(X);
+        X = X_;
+        y = y_;
+        indices = sortIndices(X);
         xCur = xPrev = X[indices[0]];
         yCur = yPrev = y[indices[0]];
         numElements = indices.size() - 1;
@@ -79,10 +86,11 @@ namespace CPPFImdlp
             if (yPivot == -1 || yPrev != yCur)
             {
                 cutPoint.start = start;
-                cutPoint.end = idxPrev;
+                cutPoint.end = idx - 1;
                 start = idx;
                 cutPoint.fromValue = firstCutPoint ? std::numeric_limits<float>::lowest() : cutPts.back().toValue;
                 cutPoint.toValue = (xPrev + xCur) / 2;
+                cutPoint.classNumber = -1;
                 firstCutPoint = false;
                 if (debug)
                 {
@@ -95,20 +103,21 @@ namespace CPPFImdlp
             xPrev = xPivot;
             idxPrev = indices[idxPivot];
         }
-        if (idxPrev >= numElements)
+        if (idx == numElements)
         {
             cutPoint.start = start;
             cutPoint.end = numElements;
             cutPoint.fromValue = firstCutPoint ? std::numeric_limits<float>::lowest() : cutPts.back().toValue;
             cutPoint.toValue = std::numeric_limits<float>::max();
+            cutPoint.classNumber = -1;
             if (debug)
                 printf("Final Cutpoint idx=%lu Cur(%3.1f, %d) Prev(%3.1f, %d) Pivot(%3.1f, %d) = (%3.1g, %3.1g] \n", idx, xCur, yCur, xPrev, yPrev, xPivot, yPivot, cutPoint.fromValue, cutPoint.toValue);
             cutPts.push_back(cutPoint);
             cutIdx.push_back(idxPrev);
         }
-        return cutPts;
+        cutPoints = cutPts;
     }
-    std::vector<float> CPPFImdlp::cutPointsAnt(std::vector<float> &X, std::vector<int> &y)
+    std::vector<float> CPPFImdlp::computeCutPointsAnt(std::vector<float> &X, std::vector<int> &y)
     {
         std::vector<float> cutPts;
         std::vector<int> cutIdx;

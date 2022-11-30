@@ -2,7 +2,7 @@
 #define METRICS_H
 #include <vector>
 #include <cmath>
-namespace CPPFImdlp
+namespace mdlp
 {
     class Metrics
     {

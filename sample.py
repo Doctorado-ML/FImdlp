@@ -3,6 +3,7 @@ from fimdlp.mdlp import FImdlp
 from fimdlp.cppfimdlp import CFImdlp
 import numpy as np
 
+
 data = load_iris()
 X = data.data
 y = data.target
@@ -16,7 +17,14 @@ test = CFImdlp(debug=False)
 # print(k)
 # k = test.cut_points_ant(X[:, 0], y)
 # print(k)
-test.debug_points(X[:, 0], y)
+# test.debug_points(X[:, 0], y)
+result = test.cut_points(X[:, 0], y)
+for item in result:
+    print(
+        f"Class={item['classNumber']} - ({item['start']:3d}, {item['end']:3d})"
+        f" -> ({item['fromValue']:3.1f}, {item['toValue']:3.1f}]"
+    )
+
 
 # X = np.array(
 #     [
