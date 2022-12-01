@@ -21,6 +21,8 @@ namespace mdlp
         std::vector<int> y;
         std::vector<float> xDiscretized;
         std::vector<CutPointBody> cutPoints;
+
+    protected:
         std::vector<size_t> sortIndices(std::vector<float> &);
 
     public:
