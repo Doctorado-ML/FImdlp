@@ -24,15 +24,21 @@ namespace mdlp
 
     protected:
         std::vector<size_t> sortIndices(std::vector<float> &);
+        bool evaluateCutPoint(CutPointBody);
+        void filterCutPoints();
+        void computeCutPoints();
+        void applyCutPoints();
+        void computeCutPointsAnt();
 
     public:
         CPPFImdlp();
         CPPFImdlp(int, bool debug = false);
         ~CPPFImdlp();
         std::vector<CutPointBody> getCutPoints();
-        void computeCutPoints(std::vector<float> &, std::vector<int> &);
-        std::vector<float> computeCutPointsAnt(std::vector<float> &, std::vector<int> &);
+        std::vector<float> getDiscretizedValues();
         void debugPoints(std::vector<float> &, std::vector<int> &);
+        void fit(std::vector<float> &, std::vector<int> &);
+        std::vector<float> &transform(std::vector<float> &);
     };
 }
 #endif

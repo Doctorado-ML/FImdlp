@@ -27,6 +27,25 @@ namespace mdlp
     {
         return cutPoints;
     }
+    std::vector<float> CPPFImdlp::getDiscretizedValues()
+    {
+        return xDiscretized;
+    }
+    void CPPFImdlp::fit(std::vector<float> &X, std::vector<int> &y)
+    {
+        this->X = X;
+        this->y = y;
+        this->indices = sortIndices(X);
+        computeCutPoints();
+        filterCutPoints();
+        applyCutPoints();
+    }
+    std::vector<float> &CPPFImdlp::transform(std::vector<float> &X)
+    {
+        std::vector<size_t> indices_transform = sortIndices(X);
+        applyCutPoints();
+        return xDiscretized;
+    }
     void CPPFImdlp::debugPoints(std::vector<float> &X, std::vector<int> &y)
     {
         std::cout << "+++++++++++++++++++++++" << std::endl;
@@ -37,13 +56,32 @@ namespace mdlp
             printf("(%3lu, %3lu) -> (%3.1f, %d)\n", i, indices[i], X[indices[i]], y[indices[i]]);
         }
         std::cout << "+++++++++++++++++++++++" << std::endl;
-        computeCutPoints(X, y);
+        fit(X, y);
         for (auto item : cutPoints)
         {
             std::cout << item << "  X[" << item.end << "]=" << X[item.end] << std::endl;
         }
     }
-    void CPPFImdlp::computeCutPoints(std::vector<float> &X_, std::vector<int> &y_)
+    void CPPFImdlp::applyCutPoints()
+    {
+    }
+    bool CPPFImdlp::evaluateCutPoint(CutPointBody point)
+    {
+        return true;
+    }
+    void CPPFImdlp::filterCutPoints()
+    {
+        std::vector<CutPointBody> filtered;
+        for (auto item : cutPoints)
+        {
+            if (evaluateCutPoint(item))
+            {
+                filtered.push_back(item);
+            }
+        }
+        cutPoints = filtered;
+    }
+    void CPPFImdlp::computeCutPoints()
     {
 
         std::vector<CutPointBody> cutPts;
@@ -52,9 +90,7 @@ namespace mdlp
         float xPrev, xCur, xPivot;
         int yPrev, yCur, yPivot;
         size_t idxPrev, idxPivot, idx, numElements, start;
-        X = X_;
-        y = y_;
-        indices = sortIndices(X);
+
         xCur = xPrev = X[indices[0]];
         yCur = yPrev = y[indices[0]];
         numElements = indices.size() - 1;
@@ -117,14 +153,13 @@ namespace mdlp
         }
         cutPoints = cutPts;
     }
-    std::vector<float> CPPFImdlp::computeCutPointsAnt(std::vector<float> &X, std::vector<int> &y)
+    void CPPFImdlp::computeCutPointsAnt()
     {
         std::vector<float> cutPts;
         std::vector<int> cutIdx;
         float xPrev, cutPoint;
         int yPrev;
         size_t idxPrev;
-        std::vector<size_t> indices = sortIndices(X);
         xPrev = X.at(indices[0]);
         yPrev = y.at(indices[0]);
         idxPrev = indices[0];
@@ -153,7 +188,7 @@ namespace mdlp
             yPrev = y.at(*index);
             idxPrev = *index;
         }
-        return cutPts;
+        // cutPoints = cutPts;
     }
     // Argsort from https://stackoverflow.com/questions/1577475/c-sorting-and-keeping-track-of-indexes
     std::vector<size_t> CPPFImdlp::sortIndices(std::vector<float> &X)
