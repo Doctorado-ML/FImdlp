@@ -1,4 +1,5 @@
 #include "Metrics.h"
+#include <set>
 namespace mdlp
 {
     Metrics::Metrics()
@@ -6,33 +7,29 @@ namespace mdlp
     }
     int Metrics::numClasses(std::vector<int> &y, std::vector<size_t> indices, size_t start, size_t end)
     {
-        int nClasses = 1;
-        int yAnt = y.at(start);
+        std::set<int> numClasses;
         for (auto i = start; i < end; ++i)
         {
-            if (y.at(i) != yAnt)
-            {
-                nClasses++;
-                yAnt = y.at(i);
-            }
+            numClasses.insert(y[indices[i]]);
         }
-        return nClasses;
+        return numClasses.size();
     }
     float Metrics::entropy(std::vector<int> &y, std::vector<size_t> &indices, size_t start, size_t end, int nClasses)
     {
         float entropy = 0;
         int nElements = 0;
-        std::vector<int> counts(nClasses, 0);
+        std::vector<int> counts(nClasses + 1, 0);
         for (auto i = &indices[start]; i != &indices[end]; ++i)
         {
             counts[y[*i]]++;
             nElements++;
         }
-        for (auto i = 0; i < nClasses; i++)
+        for (auto count : counts)
         {
-            if (counts[i] > 0)
+            if (count > 0)
             {
-                float p = (float)counts[i] / nElements;
+
+                float p = (float)count / nElements;
                 entropy -= p * log2(p);
             }
         }
