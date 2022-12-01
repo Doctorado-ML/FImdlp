@@ -7,6 +7,9 @@ clean: ## Clean up
 	if [ -f fimdlp/cfimdlp.cpp ]; then rm fimdlp/cfimdlp.cpp; fi;
 	if [ -f fimdlp/cppfimdlp.cpython-310-darwin.so ]; then rm fimdlp/cppfimdlp.cpython-310-darwin.so; fi;
 
+test:
+	cd fimdlp/testcpp && ./test.sh
+
 lint:  ## Lint and static-check
 	black fimdlp
 	flake8 fimdlp
