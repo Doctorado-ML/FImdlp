@@ -28,7 +28,6 @@ namespace mdlp
         {
             if (count > 0)
             {
-
                 float p = (float)count / nElements;
                 entropy -= p * log2(p);
             }
