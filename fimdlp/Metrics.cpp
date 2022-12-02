@@ -41,7 +41,7 @@ namespace mdlp {
         entropy = Metrics::entropy(y, indices, start, end, nClasses);
         entropyLeft = Metrics::entropy(y, indices, start, cutPoint, nClassesLeft);
         entropyRight = Metrics::entropy(y, indices, cutPoint, end, nClassesRight);
-        iGain = entropy - (float)nElementsLeft / nElements * entropyLeft - (float)nElementsRight / nElements * entropyRight;
+        iGain = entropy - ((float)nElementsLeft * entropyLeft + (float)nElementsRight * entropyRight) / nElements;
         return iGain;
     }
 

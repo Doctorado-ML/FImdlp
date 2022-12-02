@@ -10,7 +10,7 @@ cdef extern from "CPPFImdlp.h" namespace "mdlp":
         float fromValue, toValue;
     cdef cppclass CPPFImdlp:
         CPPFImdlp() except + 
-        CPPFImdlp(int, bool) except + 
+        CPPFImdlp(bool, int, bool) except + 
         void fit(vector[float]&, vector[int]&)
         vector[int] transform(vector[float]&)
         vector[int] getDiscretizedValues()
@@ -18,7 +18,7 @@ cdef extern from "CPPFImdlp.h" namespace "mdlp":
         void debugPoints(vector[float]&, vector[int]&)
         
 
-class PCutPoint_t:
+class PcutPoint_t:
     def __init__(self, start, end, fromValue, toValue):
         self.start = start
         self.end = end
@@ -27,8 +27,9 @@ class PCutPoint_t:
 
 cdef class CFImdlp:
     cdef CPPFImdlp *thisptr
-    def __cinit__(self, precision=6, debug=False):
-        self.thisptr = new CPPFImdlp(precision, debug)
+    def __cinit__(self, precision=6, debug=False, proposed=True):
+        # Proposed or original algorithm
+        self.thisptr = new CPPFImdlp(proposed, precision, debug)
     def __dealloc__(self):
         del self.thisptr
     def fit(self, X, y):

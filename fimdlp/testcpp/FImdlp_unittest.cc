@@ -30,7 +30,7 @@ namespace mdlp {
                 prev = X[testSortedIndices[i]];
             }
         }
-        std::vector<CutPoint_t> testCutPoints(samples& X, indices_t& indices, labels& y)
+        std::vector<cutPoint_t> testCutPoints(samples& X, indices_t& indices, labels& y)
         {
             this->X = X;
             this->y = y;
@@ -56,7 +56,7 @@ namespace mdlp {
     }
     // TEST_F(TestMetrics, EvaluateCutPoint)
     // {
-    //     CutPoint_t rest, candidate;
+    //     cutPoint_t rest, candidate;
     //     rest.start = 0;
     //     rest.end = 10;
     //     candidate.start = 0;
@@ -64,13 +64,13 @@ namespace mdlp {
     //     float computed = evaluateCutPoint(rest, candidate);
     //     ASSERT_NEAR(0.468996, computed, precision_test);
     // }
-    TEST_F(TestMetrics, ComputeCutPoints)
+    TEST_F(TestMetrics, ComputeCutPointsOriginal)
     {
-        std::vector<CutPoint_t> computed, expected;
-        computeCutPoints();
+        std::vector<cutPoint_t> computed, expected;
+        computeCutPointsOriginal();
         computed = getCutPoints();
         for (auto cut : computed) {
-            std::cout << "(" << cut.start << ", " << cut.end << ") -> (" << cut.fromValue << ",  " << cut.toValue << ")" << std::endl;
+            std::cout << cut.classNumber << " -> (" << cut.start << ", " << cut.end << ") -> (" << cut.fromValue << ",  " << cut.toValue << ")" << std::endl;
         }
     }
 }

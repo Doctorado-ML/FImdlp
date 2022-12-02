@@ -61,7 +61,7 @@ class FImdlp(TransformerMixin, BaseEstimator):
         self.n_features_ = X.shape[1]
         self.X_ = X
         self.y_ = y
-        self.discretizer_ = CFImdlp(debug=False)
+        self.discretizer_ = CFImdlp(debug=True, proposed=False)
         return self
 
     def transform(self, X):
@@ -104,19 +104,31 @@ class FImdlp(TransformerMixin, BaseEstimator):
         print("Cuts calculados en python: ", cuts)
         print("Cuts calculados en C++")
         print("Cut points for each feature in Iris dataset:")
-        for i in range(0, self.n_features_):
+        for i in range(0, 1):
             # datax = self.X_[np.argsort(self.X_[:, i]), i]
             # y_ = self.y_[np.argsort(self.X_[:, i])]
             datax = self.X_[:, i]
             y_ = self.y_
-            Xcutpoints = self.discretizer_.cut_points(datax, y_)
+            self.discretizer_.fit(datax, y_)
+            Xcutpoints = self.discretizer_.get_cut_points()
             print(
                 f"New ({len(Xcutpoints)}):{self.features_[i]:20s}: "
-                f"{Xcutpoints}"
+                f"{[i['toValue'] for i in Xcutpoints]}"
             )
-            Xcutpoints = self.discretizer_.cut_points_ant(datax, y_)
-            print(
-                f"Ant ({len(Xcutpoints)}):{self.features_[i]:20s}: "
-                f"{Xcutpoints}"
-            )
+            X_translated = [
+                f"{i['classNumber']} - ({i['start']}, {i['end']}) - "
+                f"({i['fromValue']}, {i['toValue']})"
+                for i in Xcutpoints
+            ]
+            print(X_translated)
+            print("*******************************")
+            print("Disretized values:")
+            print(self.discretizer_.transform(datax))
+            print("*******************************")
+            print("indices:", np.argsort(X[:, 0]))
+            # Xcutpoints = self.discretizer_.cut_points_ant(datax, y_)
+            # print(
+            #     f"Ant ({len(Xcutpoints)}):{self.features_[i]:20s}: "
+            #     f"{Xcutpoints}"
+            # )
         return X

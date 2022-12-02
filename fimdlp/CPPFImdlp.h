@@ -5,29 +5,30 @@
 namespace mdlp {
     class CPPFImdlp {
     private:
-        bool debug;
+        bool proposed; // proposed algorithm or original algorithm
         int precision;
+        bool debug;
         float divider;
         indices_t indices; // sorted indices to use with X and y
         samples X;
         labels y;
         labels xDiscretized;
         int numClasses;
-        std::vector<CutPoint_t> cutPoints;
+        cutPoints_t cutPoints;
 
     protected:
         indices_t sortIndices(samples&);
-        void computeCutPointsAnt();
-        void computeCutPoints();
-        bool evaluateCutPoint(CutPoint_t, CutPoint_t);
+        void computeCutPointsOriginal();
+        void computeCutPointsProposed();
+        bool evaluateCutPoint(cutPoint_t, cutPoint_t);
         void filterCutPoints();
         void applyCutPoints();
 
     public:
         CPPFImdlp();
-        CPPFImdlp(int, bool debug = false);
+        CPPFImdlp(bool, int, bool debug = false);
         ~CPPFImdlp();
-        std::vector<CutPoint_t> getCutPoints();
+        cutPoints_t getCutPoints();
         labels getDiscretizedValues();
         void debugPoints(samples&, labels&);
         void fit(samples&, labels&);

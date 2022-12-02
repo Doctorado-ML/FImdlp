@@ -129,3 +129,5 @@ dmypy.json
 .pyre/
 cfimdlp.cpp
 .vscode/*
+**/.idea/*
+
