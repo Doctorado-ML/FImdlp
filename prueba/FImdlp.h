@@ -2,14 +2,12 @@
 #define FIMDLP_H
 #include <vector>
 #include <Python.h>
-namespace FImdlp
-{
-    class FImdlp
-    {
+namespace FImdlp {
+    class FImdlp {
     public:
         FImdlp();
         ~FImdlp();
-        std::vector<float> cutPoints(std::vector<int> &, std::vector<int> &);
+        samples cutPoints(labels&, labels&);
     };
 }
 #endif

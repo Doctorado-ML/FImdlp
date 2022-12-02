@@ -18,13 +18,22 @@ test = CFImdlp(debug=False)
 # k = test.cut_points_ant(X[:, 0], y)
 # print(k)
 # test.debug_points(X[:, 0], y)
-result = test.cut_points(X[:, 0], y)
+X = [5.7, 5.3, 5.2, 5.1, 5.0, 5.6, 5.1, 6.0, 5.1, 5.9]
+indices = [4, 3, 6, 8, 2, 1, 5, 0, 9, 7]
+y = [1, 1, 1, 1, 1, 2, 2, 2, 2, 2]
+# test.fit(X[:, 0], y)
+test.fit(X, y)
+result = test.get_cut_points()
 for item in result:
     print(
         f"Class={item['classNumber']} - ({item['start']:3d}, {item['end']:3d})"
         f" -> ({item['fromValue']:3.1f}, {item['toValue']:3.1f}]"
     )
-
+print(test.get_discretized_values())
+# print(test.transform(X))
+# print(X)
+# print(indices)
+# print(np.array(X)[indices])
 
 # X = np.array(
 #     [

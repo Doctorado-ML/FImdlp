@@ -1,40 +1,35 @@
 #include "Metrics.h"
 #include <set>
-namespace mdlp
-{
+namespace mdlp {
     Metrics::Metrics()
     {
     }
-    int Metrics::numClasses(std::vector<int> &y, std::vector<size_t> indices, size_t start, size_t end)
+    int Metrics::numClasses(labels& y, indices_t indices, size_t start, size_t end)
     {
         std::set<int> numClasses;
-        for (auto i = start; i < end; ++i)
-        {
+        for (auto i = start; i < end; ++i) {
             numClasses.insert(y[indices[i]]);
         }
         return numClasses.size();
     }
-    float Metrics::entropy(std::vector<int> &y, std::vector<size_t> &indices, size_t start, size_t end, int nClasses)
+    float Metrics::entropy(labels& y, indices_t& indices, size_t start, size_t end, int nClasses)
     {
         float entropy = 0;
         int nElements = 0;
-        std::vector<int> counts(nClasses + 1, 0);
-        for (auto i = &indices[start]; i != &indices[end]; ++i)
-        {
+        labels counts(nClasses + 1, 0);
+        for (auto i = &indices[start]; i != &indices[end]; ++i) {
             counts[y[*i]]++;
             nElements++;
         }
-        for (auto count : counts)
-        {
-            if (count > 0)
-            {
+        for (auto count : counts) {
+            if (count > 0) {
                 float p = (float)count / nElements;
                 entropy -= p * log2(p);
             }
         }
         return entropy;
     }
-    float Metrics::informationGain(std::vector<int> &y, std::vector<size_t> &indices, size_t start, size_t end, size_t cutPoint, int nClasses)
+    float Metrics::informationGain(labels& y, indices_t& indices, size_t start, size_t end, size_t cutPoint, int nClasses)
     {
         float iGain = 0.0;
         float entropy, entropyLeft, entropyRight;

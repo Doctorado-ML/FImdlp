@@ -12,13 +12,13 @@ cdef extern from "CPPFImdlp.h" namespace "mdlp":
         CPPFImdlp() except + 
         CPPFImdlp(int, bool) except + 
         void fit(vector[float]&, vector[int]&)
-        vector[float] transform(vector[float]&)
-        vector[float] getDiscretizedValues()
+        vector[int] transform(vector[float]&)
+        vector[int] getDiscretizedValues()
         vector[CutPointBody] getCutPoints()
         void debugPoints(vector[float]&, vector[int]&)
         
 
-class PCutPointBody:
+class PCutPoint_t:
     def __init__(self, start, end, fromValue, toValue):
         self.start = start
         self.end = end
@@ -37,7 +37,7 @@ cdef class CFImdlp:
         return self.thisptr.transform(X)
     def get_discretized_values(self):
         return self.thisptr.getDiscretizedValues()
-    def get_cut_points(self, X, y):
+    def get_cut_points(self):
         return  self.thisptr.getCutPoints()
     def debug_points(self, X, y):
         return self.thisptr.debugPoints(X, y)
