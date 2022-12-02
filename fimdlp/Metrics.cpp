@@ -2,8 +2,7 @@
 #include <set>
 namespace mdlp {
     Metrics::Metrics()
-    {
-    }
+        = default;
     int Metrics::numClasses(labels& y, indices_t indices, size_t start, size_t end)
     {
         std::set<int> numClasses;
@@ -31,7 +30,7 @@ namespace mdlp {
     }
     float Metrics::informationGain(labels& y, indices_t& indices, size_t start, size_t end, size_t cutPoint, int nClasses)
     {
-        float iGain = 0.0;
+        float iGain;
         float entropy, entropyLeft, entropyRight;
         int nClassesLeft, nClassesRight;
         int nElementsLeft = cutPoint - start, nElementsRight = end - cutPoint;

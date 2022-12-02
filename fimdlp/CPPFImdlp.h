@@ -17,7 +17,7 @@ namespace mdlp {
         cutPoints_t cutPoints;
 
     protected:
-        indices_t sortIndices(samples&);
+        static indices_t sortIndices(samples&);
         void computeCutPointsOriginal();
         void computeCutPointsProposed();
         bool evaluateCutPoint(cutPoint_t, cutPoint_t);

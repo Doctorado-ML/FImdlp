@@ -1,7 +1,6 @@
 #include "CPPFImdlp.h"
 #include <numeric>
 #include <iostream>
-#include <iomanip>
 #include <algorithm>
 #include "Metrics.h"
 namespace mdlp {
@@ -16,14 +15,15 @@ namespace mdlp {
     CPPFImdlp::CPPFImdlp() : proposed(true), precision(6), debug(false)
     {
         divider = pow(10, precision);
+        numClasses = 0;
     }
     CPPFImdlp::CPPFImdlp(bool proposed, int precision, bool debug) : proposed(proposed), precision(precision), debug(debug)
     {
         divider = pow(10, precision);
+        numClasses = 0;
     }
     CPPFImdlp::~CPPFImdlp()
-    {
-    }
+        = default;
     std::vector<cutPoint_t> CPPFImdlp::getCutPoints()
     {
         return cutPoints;
@@ -32,11 +32,19 @@ namespace mdlp {
     {
         return xDiscretized;
     }
-    void CPPFImdlp::fit(samples& X, labels& y)
+    void CPPFImdlp::fit(samples& X_, labels& y_)
     {
-        this->X = X;
-        this->y = y;
-        this->indices = sortIndices(X);
+        X = X_;
+        y = y_;
+        if (X.size() != y.size()) {
+            std::cerr << "X and y must have the same size" << std::endl;
+            return;
+        }
+        if (X.size() == 0) {
+            std::cerr << "X and y must have at least one element" << std::endl;
+            return;
+        }
+        this->indices = sortIndices(X_);
         this->xDiscretized = labels(X.size(), -1);
         this->numClasses = Metrics::numClasses(y, indices, 0, X.size());
 
@@ -48,24 +56,24 @@ namespace mdlp {
         filterCutPoints();
         applyCutPoints();
     }
-    labels& CPPFImdlp::transform(samples& X)
+    labels& CPPFImdlp::transform(samples& X_)
     {
-        indices_t indices_transform = sortIndices(X);
+        indices_t indices_transform = sortIndices(X_);
         applyCutPoints();
         return xDiscretized;
     }
-    void CPPFImdlp::debugPoints(samples& X, labels& y)
+    void CPPFImdlp::debugPoints(samples& X_, labels& y_)
     {
         std::cout << "+++++++++++++++++++++++" << std::endl;
         // for (auto i : sortIndices(X))
-        indices_t indices = sortIndices(X);
-        for (size_t i = 0; i < indices.size(); i++) {
-            printf("(%3lu, %3lu) -> (%3.1f, %d)\n", i, indices[i], X[indices[i]], y[indices[i]]);
+        indices_t indices_n = sortIndices(X);
+        for (size_t i = 0; i < indices_n.size(); i++) {
+            printf("(%3lu, %3lu) -> (%3.1f, %d)\n", i, indices_n[i], X_[indices_n[i]], y_[indices_n[i]]);
         }
         std::cout << "+++++++++++++++++++++++" << std::endl;
-        fit(X, y);
+        fit(X_, y_);
         for (auto item : cutPoints) {
-            std::cout << item.start << "  X[" << item.end << "]=" << X[item.end] << std::endl;
+            std::cout << item.start << "  X_[" << item.end << "]=" << X_[item.end] << std::endl;
         }
     }
     void CPPFImdlp::applyCutPoints()
@@ -81,7 +89,7 @@ namespace mdlp {
         int k, k1, k2;
         float ig, delta;
         float ent, ent1, ent2;
-        float N = float(rest.end - rest.start);
+        auto N = float(rest.end - rest.start);
         if (N < 2) {
             return false;
         }
@@ -92,7 +100,7 @@ namespace mdlp {
         ent1 = Metrics::entropy(y, indices, rest.start, candidate.end, numClasses);
         ent2 = Metrics::entropy(y, indices, candidate.end, rest.end, numClasses);
         ig = Metrics::informationGain(y, indices, rest.start, rest.end, candidate.end, numClasses);
-        delta = log2(pow(3, k) - 2) - (k * ent - k1 * ent1 - k2 * ent2);
+        delta = log2(pow(3, float(k)) - 2) - (float(k) * ent - float(k1) * ent1 - float(k2) * ent2);
         float term = 1 / N * (log2(N - 1) + delta);
         if (debug) {
             std::cout << "Rest: " << rest;
@@ -116,7 +124,8 @@ namespace mdlp {
         bool lastReject = false, first = true;
         for (auto item : cutPoints) {
             if (evaluateCutPoint(rest, item)) {
-                std::cout << "Accepted" << std::endl;
+                if (debug)
+                    std::cout << "Accepted" << std::endl;
                 if (lastReject) {
                     if (first) {
                         item.fromValue = std::numeric_limits<float>::lowest();
@@ -132,13 +141,14 @@ namespace mdlp {
                 first = false;
                 rest.start = item.end;
             } else {
-                std::cout << "Rejected" << std::endl;
+                if (debug)
+                    std::cout << "Rejected" << std::endl;
                 lastReject = true;
             }
         }
         if (!first) {
             filtered.back().toValue = std::numeric_limits<float>::max();
-            filtered.back().end = X.size();
+            filtered.back().end = X.size() - 1;
         } else {
             filtered.push_back(rest);
         }
@@ -149,15 +159,13 @@ namespace mdlp {
     {
         cutPoints_t cutPts;
         cutPoint_t cutPoint;
-        indices_t cutIdx;
         float xPrev, xCur, xPivot;
         int yPrev, yCur, yPivot;
-        size_t idxPrev, idxPivot, idx, numElements, start;
+        size_t idx, numElements, start;
 
         xCur = xPrev = X[indices[0]];
         yCur = yPrev = y[indices[0]];
         numElements = indices.size() - 1;
-        idxPrev = indices[0];
         idx = start = 0;
         bool firstCutPoint = true;
         if (debug)
@@ -165,7 +173,6 @@ namespace mdlp {
         while (idx < numElements) {
             xPivot = xCur;
             yPivot = yCur;
-            idxPivot = indices[idx];
             if (debug)
                 printf("<idx=%lu -> Prev(%3.1f, %d) Pivot(%3.1f, %d) Cur(%3.1f, %d) \n", idx, xPrev, yPrev, xPivot, yPivot, xCur, yCur);
             // Read the same values and check class changes
@@ -192,30 +199,29 @@ namespace mdlp {
                     printf("Cutpoint idx=%lu Cur(%3.1f, %d) Prev(%3.1f, %d) Pivot(%3.1f, %d) = (%3.1g, %3.1g] \n", idx, xCur, yCur, xPrev, yPrev, xPivot, yPivot, cutPoint.fromValue, cutPoint.toValue);
                 }
                 cutPts.push_back(cutPoint);
-                cutIdx.push_back(idxPrev);
             }
             yPrev = yPivot;
             xPrev = xPivot;
-            idxPrev = indices[idxPivot];
         }
         if (idx == numElements) {
             cutPoint.start = start;
-            cutPoint.end = numElements;
+            cutPoint.end = numElements + 1;
             cutPoint.fromValue = firstCutPoint ? std::numeric_limits<float>::lowest() : cutPts.back().toValue;
             cutPoint.toValue = std::numeric_limits<float>::max();
             cutPoint.classNumber = -1;
             if (debug)
                 printf("Final Cutpoint idx=%lu Cur(%3.1f, %d) Prev(%3.1f, %d) Pivot(%3.1f, %d) = (%3.1g, %3.1g] \n", idx, xCur, yCur, xPrev, yPrev, xPivot, yPivot, cutPoint.fromValue, cutPoint.toValue);
             cutPts.push_back(cutPoint);
-            cutIdx.push_back(idxPrev);
         }
+        for (auto cutPt : cutPts)
+            std::cout << "Cut point: " << cutPt;
         cutPoints = cutPts;
     }
     void CPPFImdlp::computeCutPointsOriginal()
     {
         cutPoints_t cutPts;
         cutPoint_t cutPoint;
-        float xPrev = std::numeric_limits<float>::lowest();
+        float xPrev;
         int yPrev;
         bool first = true;
         // idxPrev is the index of the init instance of the cutPoint
@@ -236,40 +242,34 @@ namespace mdlp {
                 cutPoint.end = index;
                 cutPoint.classNumber = -1;
                 cutPoint.toValue = round(divider * (X[idx] + xPrev) / 2) / divider;
-                if (debug) {
-                    std::cout << "Cut point: " << cutPoint << " //";
-                    std::cout << X[idx] << " -> " << y[idx] << " yPrev= "
-                        << yPrev << idxPrev << std::endl;
-                }
                 idxPrev = index;
                 cutPts.push_back(cutPoint);
             }
             xPrev = X[idx];
             yPrev = y[idx];
         }
-        std::cout << "Came to here" << first << std::endl;
         if (first) {
             cutPoint.start = 0;
             cutPoint.classNumber = -1;
             cutPoint.fromValue = std::numeric_limits<float>::lowest();
             cutPoint.toValue = std::numeric_limits<float>::max();
-            cutPoints.push_back(cutPoint);
+            cutPts.push_back(cutPoint);
         } else
             cutPts.back().toValue = std::numeric_limits<float>::max();
         cutPts.back().end = X.size();
         if (debug)
-            for (auto cutPoint : cutPts)
-                std::cout << "Cut point: " << cutPoint << std::endl;
+            for (auto cutPt : cutPts)
+                std::cout << "-Cut point: " << cutPt;
         cutPoints = cutPts;
     }
     // Argsort from https://stackoverflow.com/questions/1577475/c-sorting-and-keeping-track-of-indexes
-    indices_t CPPFImdlp::sortIndices(samples& X)
+    indices_t CPPFImdlp::sortIndices(samples& X_)
     {
-        indices_t idx(X.size());
+        indices_t idx(X_.size());
         std::iota(idx.begin(), idx.end(), 0);
-        for (std::size_t i = 0; i < X.size(); i++)
-            stable_sort(idx.begin(), idx.end(), [&X](size_t i1, size_t i2)
-                { return X[i1] < X[i2]; });
+        for (std::size_t i = 0; i < X_.size(); i++)
+            stable_sort(idx.begin(), idx.end(), [&X_](size_t i1, size_t i2)
+                { return X_[i1] < X_[i2]; });
         return idx;
     }
 }

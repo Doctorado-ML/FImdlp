@@ -130,4 +130,5 @@ dmypy.json
 cfimdlp.cpp
 .vscode/*
 **/.idea/*
-
+cmake-build-debug
+cmake-build-debug/**
