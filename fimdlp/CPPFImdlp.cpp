@@ -32,17 +32,17 @@ namespace mdlp {
     {
         return xDiscretized;
     }
-    void CPPFImdlp::fit(samples& X_, labels& y_)
+    CPPFImdlp& CPPFImdlp::fit(samples& X_, labels& y_)
     {
         X = X_;
         y = y_;
         if (X.size() != y.size()) {
             std::cerr << "X and y must have the same size" << std::endl;
-            return;
+            return *this;
         }
         if (X.size() == 0) {
             std::cerr << "X and y must have at least one element" << std::endl;
-            return;
+            return *this;
         }
         this->indices = sortIndices(X_);
         this->xDiscretized = labels(X.size(), -1);
@@ -55,6 +55,7 @@ namespace mdlp {
         }
         filterCutPoints();
         applyCutPoints();
+        return *this;
     }
     labels& CPPFImdlp::transform(samples& X_)
     {

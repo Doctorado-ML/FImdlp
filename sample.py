@@ -66,28 +66,28 @@ features = data.feature_names
 # test.transform(X)
 # test.get_cut_points()
 
-test = CFImdlp(debug=True, proposed=False)
+test = CFImdlp(debug=False, proposed=False)
 # # k = test.cut_points(X[:, 0], y)
 # # print(k)
 # # k = test.cut_points_ant(X[:, 0], y)
 # # print(k)
 # # test.debug_points(X[:, 0], y)
-X = [5.7, 5.3, 5.2, 5.1, 5.0, 5.6, 5.1, 6.0, 5.1, 5.9]
-indices = [4, 3, 6, 8, 2, 1, 5, 0, 9, 7]
-y = [1, 1, 1, 1, 1, 2, 2, 2, 2, 2]
+# X = [5.7, 5.3, 5.2, 5.1, 5.0, 5.6, 5.1, 6.0, 5.1, 5.9]
+# indices = [4, 3, 6, 8, 2, 1, 5, 0, 9, 7]
+# y = [1, 1, 1, 1, 1, 2, 2, 2, 2, 2]
 # # To check
 # indices2 = np.argsort(X)
 # Xs = np.array(X)[indices2]
 # ys = np.array(y)[indices2]
 
-# test.fit(X[:, 0], y)
-test.fit(X, y)
+test.fit(X[:, 0], y)
+# test.fit(X, y)
 result = test.get_cut_points()
-for item in result:
-    print(
-        f"*Class={item['classNumber']} - ({item['start']:3d}, {item['end']:3d})"
-        f" -> ({item['fromValue']:3.1f}, {item['toValue']:3.1f}]"
-    )
+# for item in result:
+#     print(
+#         f"Class={item['classNumber']} - ({item['start']:3d}, {item['end']:3d})"
+#         f" -> ({item['fromValue']:3.1f}, {item['toValue']:3.1f}]"
+#     )
 print(test.get_discretized_values())
 
 # print(Xs, ys)
@@ -102,13 +102,13 @@ print(test.get_discretized_values())
 # print(indices)
 # print(np.array(X)[indices])
 
-# X = np.array(
-#     [
-#         [5.1, 3.5, 1.4, 0.2],
-#         [5.2, 3.0, 1.4, 0.2],
-#         [5.3, 3.2, 1.3, 0.2],
-#         [5.3, 3.1, 1.5, 0.2],
-#     ]
-# )
-# y = np.array([0, 0, 0, 1])
-# test.fit(X, y).transform(X)
+X = np.array(
+    [
+        [5.1, 3.5, 1.4, 0.2],
+        [5.2, 3.0, 1.4, 0.2],
+        [5.3, 3.2, 1.3, 0.2],
+        [5.3, 3.1, 1.5, 0.2],
+    ]
+)
+y = np.array([0, 0, 0, 1])
+print(test.fit(X[:, 0], y).transform(X[:, 0]))

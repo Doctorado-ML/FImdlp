@@ -31,7 +31,7 @@ namespace mdlp {
         cutPoints_t getCutPoints();
         labels getDiscretizedValues();
         void debugPoints(samples&, labels&);
-        void fit(samples&, labels&);
+        CPPFImdlp& fit(samples&, labels&);
         labels& transform(samples&);
     };
 }
