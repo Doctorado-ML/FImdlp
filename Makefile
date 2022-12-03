@@ -10,6 +10,9 @@ clean: ## Clean up
 test:
 	cd fimdlp/testcpp && ./test
 
+coverage:
+	cd fimdlp/testcpp && ./cover
+
 lint:  ## Lint and static-check
 	black fimdlp
 	flake8 fimdlp
