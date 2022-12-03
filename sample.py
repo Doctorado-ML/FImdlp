@@ -65,31 +65,37 @@ features = data.feature_names
 # test.fit(X, y, features=features)
 # test.transform(X)
 # test.get_cut_points()
-
-test = CFImdlp(debug=False, proposed=False)
-# # k = test.cut_points(X[:, 0], y)
-# # print(k)
-# # k = test.cut_points_ant(X[:, 0], y)
-# # print(k)
-# # test.debug_points(X[:, 0], y)
-# X = [5.7, 5.3, 5.2, 5.1, 5.0, 5.6, 5.1, 6.0, 5.1, 5.9]
-# indices = [4, 3, 6, 8, 2, 1, 5, 0, 9, 7]
-# y = [1, 1, 1, 1, 1, 2, 2, 2, 2, 2]
-# # To check
-# indices2 = np.argsort(X)
-# Xs = np.array(X)[indices2]
-# ys = np.array(y)[indices2]
-
-test.fit(X[:, 0], y)
-# test.fit(X, y)
-result = test.get_cut_points()
-# for item in result:
-#     print(
-#         f"Class={item['classNumber']} - ({item['start']:3d}, {item['end']:3d})"
-#         f" -> ({item['fromValue']:3.1f}, {item['toValue']:3.1f}]"
-#     )
-print(test.get_discretized_values())
-
+for proposed in [True, False]:
+    X = data.data
+    y = data.target
+    print("*** Proposed: ", proposed)
+    test = CFImdlp(debug=False, proposed=proposed)
+    test.fit(X[:, 0], y)
+    result = test.get_cut_points()
+    for item in result:
+        print(
+            f"Class={item['classNumber']} - ({item['start']:3d}, {item['end']:3d})"
+            f" -> ({item['fromValue']:3.1f}, {item['toValue']:3.1f}]"
+        )
+    print(test.get_discretized_values())
+    print("+" * 40)
+    X = np.array(
+        [
+            [5.1, 3.5, 1.4, 0.2],
+            [5.2, 3.0, 1.4, 0.2],
+            [5.3, 3.2, 1.3, 0.2],
+            [5.4, 3.1, 1.5, 0.2],
+        ]
+    )
+    y = np.array([0, 0, 0, 1])
+    print(test.fit(X[:, 0], y).transform(X[:, 0]))
+    result = test.get_cut_points()
+    for item in result:
+        print(
+            f"Class={item['classNumber']} - ({item['start']:3d}, {item['end']:3d})"
+            f" -> ({item['fromValue']:3.1f}, {item['toValue']:3.1f}]"
+        )
+    print("*" * 40)
 # print(Xs, ys)
 # print("**********************")
 # test = [(0, 3), (4, 4), (5, 5), (6, 8), (9, 9)]
@@ -102,13 +108,17 @@ print(test.get_discretized_values())
 # print(indices)
 # print(np.array(X)[indices])
 
-X = np.array(
-    [
-        [5.1, 3.5, 1.4, 0.2],
-        [5.2, 3.0, 1.4, 0.2],
-        [5.3, 3.2, 1.3, 0.2],
-        [5.3, 3.1, 1.5, 0.2],
-    ]
-)
-y = np.array([0, 0, 0, 1])
-print(test.fit(X[:, 0], y).transform(X[:, 0]))
+
+# # k = test.cut_points(X[:, 0], y)
+# # print(k)
+# # k = test.cut_points_ant(X[:, 0], y)
+# # print(k)
+# # test.debug_points(X[:, 0], y)
+X = [5.7, 5.3, 5.2, 5.1, 5.0, 5.6, 5.1, 6.0, 5.1, 5.9]
+indices = [4, 3, 6, 8, 2, 1, 5, 0, 9, 7]
+# y = [1, 1, 1, 1, 1, 2, 2, 2, 2, 2]
+# # To check
+# indices2 = np.argsort(X)
+ Xs = np.array(X)[indices2]
+ ys = np.array(y)[indices2]
+

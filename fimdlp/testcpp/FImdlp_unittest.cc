@@ -4,7 +4,7 @@
 namespace mdlp {
     class TestMetrics : public CPPFImdlp, public testing::Test {
     public:
-        TestMetrics() : CPPFImdlp(true, 6, false) {}
+        TestMetrics() : CPPFImdlp(true, 6, true) {}
         indices_t indices; // sorted indices to use with X and y
         samples X;
         labels y;
@@ -13,6 +13,8 @@ namespace mdlp {
         float precision_test = 0.000001;
         void SetUp()
         {
+            //    5.0, 5.1, 5.1, 5.1, 5.2, 5.3, 5.6, 5.7, 5.9, 6.0]
+            //(5.0, 1) (5.1, 1) (5.1, 2) (5.1, 2) (5.2, 1) (5.3, 1) (5.6, 2) (5.7, 1) (5.9, 2) (6.0, 2)
             X = { 5.7, 5.3, 5.2, 5.1, 5.0, 5.6, 5.1, 6.0, 5.1, 5.9 };
             y = { 1, 1, 1, 1, 1, 2, 2, 2, 2, 2 };
             fit(X, y);
@@ -82,8 +84,8 @@ namespace mdlp {
         expected = {
                 { 0, 4, -1, -3.4028234663852886e+38, 3.4028234663852886e+38 },
         };
-        X = {0, 1, 2, 2};
-        y = {1, 1, 1, 2};
+        X = { 0, 1, 2, 2 };
+        y = { 1, 1, 1, 2 };
         fit(X, y);
         computeCutPointsOriginal();
         computed = getCutPoints();
@@ -100,8 +102,8 @@ namespace mdlp {
     {
         cutPoints_t computed, expected;
         expected = {
-            { 0, 3, -1, -3.4028234663852886e+38, 5.1 }, { 4, 4, -1, 5.1, 5.2 },
-            { 5, 5, -1, 5.2, 5.4 }, { 6, 8, -1, 5.4, 5.85 },
+            { 0, 4, -1, -3.4028234663852886e+38, 5.1 }, { 4, 5, -1, 5.1, 5.2 },
+            { 5, 6, -1, 5.2, 5.4 }, { 6, 9, -1, 5.4, 5.85 },
             { 9, 10, -1, 5.85, 3.4028234663852886e+38 }
         };
         computeCutPointsProposed();
@@ -119,11 +121,11 @@ namespace mdlp {
     {
         cutPoints_t computed, expected;
         expected = {
-                { 0, 2, -1, -3.4028234663852886e+38, 1.5 },
+                { 0, 3, -1, -3.4028234663852886e+38, 1.5 },
                 { 3, 4, -1, 1.5, 3.4028234663852886e+38 }
         };
-        X = {0, 1, 2, 2};
-        y = {1, 1, 1, 2};
+        X = { 0, 1, 2, 2 };
+        y = { 1, 1, 1, 2 };
         fit(X, y);
         computeCutPointsProposed();
         computed = getCutPoints();
@@ -134,6 +136,25 @@ namespace mdlp {
             EXPECT_EQ(computed[i].classNumber, expected[i].classNumber);
             EXPECT_NEAR(computed[i].fromValue, expected[i].fromValue, precision_test);
             EXPECT_NEAR(computed[i].toValue, expected[i].toValue, precision_test);
+        }
+    }
+    TEST_F(TestMetrics, ApplyCutPoints)
+    {
+        cutPoints_t expected = {
+            { 0, 4, 17, -3.4028234663852886e+38, 5.1 }, { 4, 6, 31, 5.1, 5.4 },
+            { 6, 8, 59, 5.4, 5.85 },
+            { 8, 10, 41, 5.85, 3.4028234663852886e+38 }
+        };
+        setCutPoints(expected);
+        applyCutPoints();
+        labels expected_x = getDiscretizedValues();
+        indices_t indices_x = getIndices();
+        for (auto i = 0; i < 5; i++) {
+            std::cout << "cutPoint[" << i << "].start = " << expected[i].start << std::endl;
+            for (auto j = expected[i].start; j < expected[i].end; j++) {
+                std::cout << expected_x[j] << expected[i].classNumber << std::endl;
+                EXPECT_EQ(expected_x[indices_x[j]], expected[i].classNumber);
+            }
         }
     }
 }

@@ -17,6 +17,7 @@ namespace mdlp {
         cutPoints_t cutPoints;
 
     protected:
+        void setCutPoints(cutPoints_t);
         static indices_t sortIndices(samples&);
         void computeCutPointsOriginal();
         void computeCutPointsProposed();
@@ -29,6 +30,7 @@ namespace mdlp {
         CPPFImdlp(bool, int, bool debug = false);
         ~CPPFImdlp();
         cutPoints_t getCutPoints();
+        indices_t getIndices();
         labels getDiscretizedValues();
         void debugPoints(samples&, labels&);
         CPPFImdlp& fit(samples&, labels&);

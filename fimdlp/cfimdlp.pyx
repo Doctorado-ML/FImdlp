@@ -15,7 +15,6 @@ cdef extern from "CPPFImdlp.h" namespace "mdlp":
         vector[int] transform(vector[float]&)
         vector[int] getDiscretizedValues()
         vector[CutPointBody] getCutPoints()
-        void debugPoints(vector[float]&, vector[int]&)
         
 
 class PcutPoint_t:
@@ -41,6 +40,4 @@ cdef class CFImdlp:
         return self.thisptr.getDiscretizedValues()
     def get_cut_points(self):
         return self.thisptr.getCutPoints()
-    def debug_points(self, X, y):
-        return self.thisptr.debugPoints(X, y)
  
