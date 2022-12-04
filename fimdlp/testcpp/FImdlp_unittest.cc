@@ -2,15 +2,9 @@
 #include "../Metrics.h"
 #include "../CPPFImdlp.h"
 namespace mdlp {
-    class TestMetrics : public CPPFImdlp, public testing::Test {
+    class TestFImdlp : public CPPFImdlp, public testing::Test {
     public:
-        TestMetrics() : CPPFImdlp(true, 6, true) {}
-        indices_t indices; // sorted indices to use with X and y
-        samples X;
-        labels y;
-        samples xDiscretized;
-        int numClasses;
-        float precision_test = 0.000001;
+        TestFImdlp() : CPPFImdlp(true, 6, true) {}
         void SetUp()
         {
             //    5.0, 5.1, 5.1, 5.1, 5.2, 5.3, 5.6, 5.7, 5.9, 6.0]
@@ -19,7 +13,19 @@ namespace mdlp {
             y = { 1, 1, 1, 1, 1, 2, 2, 2, 2, 2 };
             fit(X, y);
         }
-        void check_sorted_vector(samples& X_, indices_t indices_)
+        void initCutPoints()
+        {
+            setCutPoints(cutPoints_t());
+        }
+        void initIndices()
+        {
+            indices = indices_t();
+        }
+        void initDiscretized()
+        {
+            xDiscretized = labels();
+        }
+        void checkSortedVector(samples& X_, indices_t indices_)
         {
             X = X_;
             indices = indices_;
@@ -32,113 +38,109 @@ namespace mdlp {
             }
         }
     };
-    // 
-    TEST_F(TestMetrics, SortIndices)
+    TEST_F(TestFImdlp, SortIndices)
     {
         X = { 5.7, 5.3, 5.2, 5.1, 5.0, 5.6, 5.1, 6.0, 5.1, 5.9 };
-        indices_t indices = { 4, 3, 6, 8, 2, 1, 5, 0, 9, 7 };
-        check_sorted_vector(X, indices);
+        indices = { 4, 3, 6, 8, 2, 1, 5, 0, 9, 7 };
+        checkSortedVector(X, indices);
         X = { 5.77, 5.88, 5.99 };
         indices = { 0, 1, 2 };
-        check_sorted_vector(X, indices);
+        checkSortedVector(X, indices);
         X = { 5.33, 5.22, 5.11 };
         indices = { 2, 1, 0 };
-        check_sorted_vector(X, indices);
+        checkSortedVector(X, indices);
     }
-    TEST_F(TestMetrics, EvaluateCutPoint)
+    TEST_F(TestFImdlp, EvaluateCutPoint)
     {
         cutPoint_t rest, candidate;
-        rest.start = 0;
-        rest.end = 10;
-        rest.classNumber = -1;
-        rest.fromValue = -1;
-        rest.toValue = 1000;
-        candidate.start = 0;
-        candidate.end = 4;
-        candidate.fromValue = -1;
-        candidate.toValue = 5.15;
-        candidate.classNumber = -1;
+        rest = { 0, 10, -1, -1, 1000 };
+        candidate = { 0, 4, -1, -1, 5.15 };
         EXPECT_FALSE(evaluateCutPoint(rest, candidate));
     }
-    TEST_F(TestMetrics, ComputeCutPointsOriginal)
+    TEST_F(TestFImdlp, ComputeCutPointsOriginal)
     {
         cutPoints_t computed, expected;
+        int expectedSize = 3;
         expected = {
             { 0, 4, -1, -3.4028234663852886e+38, 5.15 }, { 4, 6, -1, 5.15, 5.45 },
-            { 6, 7, -1, 5.45, 5.65 }, { 7, 10, -1, 5.65, 3.4028234663852886e+38 }
+            { 6, 10, -1, 5.45, 3.4028234663852886e+38 }
         };
+        setCutPoints(cutPoints_t());
         computeCutPointsOriginal();
         computed = getCutPoints();
-        EXPECT_EQ(computed.size(), 4);
-        for (auto i = 0; i < 4; i++) {
+        EXPECT_EQ(computed.size(), expectedSize);
+        for (auto i = 0; i < expectedSize; i++) {
             EXPECT_EQ(computed[i].start, expected[i].start);
             EXPECT_EQ(computed[i].end, expected[i].end);
             EXPECT_EQ(computed[i].classNumber, expected[i].classNumber);
-            EXPECT_NEAR(computed[i].fromValue, expected[i].fromValue, precision_test);
-            EXPECT_NEAR(computed[i].toValue, expected[i].toValue, precision_test);
+            EXPECT_NEAR(computed[i].fromValue, expected[i].fromValue, precision);
+            EXPECT_NEAR(computed[i].toValue, expected[i].toValue, precision);
         }
     }
-    TEST_F(TestMetrics, ComputeCutPointsOriginalGCase)
+    TEST_F(TestFImdlp, ComputeCutPointsOriginalGCase)
     {
         cutPoints_t computed, expected;
         expected = {
                 { 0, 4, -1, -3.4028234663852886e+38, 3.4028234663852886e+38 },
         };
+        int expectedSize = 1;
         X = { 0, 1, 2, 2 };
         y = { 1, 1, 1, 2 };
         fit(X, y);
         computeCutPointsOriginal();
         computed = getCutPoints();
-        EXPECT_EQ(computed.size(), 1);
-        for (auto i = 0; i < 1; i++) {
+        EXPECT_EQ(computed.size(), expectedSize);
+        for (auto i = 0; i < expectedSize; i++) {
             EXPECT_EQ(computed[i].start, expected[i].start);
             EXPECT_EQ(computed[i].end, expected[i].end);
             EXPECT_EQ(computed[i].classNumber, expected[i].classNumber);
-            EXPECT_NEAR(computed[i].fromValue, expected[i].fromValue, precision_test);
-            EXPECT_NEAR(computed[i].toValue, expected[i].toValue, precision_test);
+            EXPECT_NEAR(computed[i].fromValue, expected[i].fromValue, precision);
+            EXPECT_NEAR(computed[i].toValue, expected[i].toValue, precision);
         }
     }
-    TEST_F(TestMetrics, ComputeCutPointsProposed)
+    TEST_F(TestFImdlp, ComputeCutPointsProposed)
     {
         cutPoints_t computed, expected;
         expected = {
-            { 0, 4, -1, -3.4028234663852886e+38, 5.1 }, { 4, 5, -1, 5.1, 5.2 },
-            { 5, 6, -1, 5.2, 5.4 }, { 6, 9, -1, 5.4, 5.85 },
+            { 0, 4, -1, -3.4028234663852886e+38, 5.1 }, { 4, 6, -1, 5.1, 5.4 },
+            { 6, 9, -1, 5.4, 5.85 },
             { 9, 10, -1, 5.85, 3.4028234663852886e+38 }
         };
+        int expectedSize = 4;
         computeCutPointsProposed();
         computed = getCutPoints();
-        EXPECT_EQ(computed.size(), 5);
-        for (auto i = 0; i < 5; i++) {
+        EXPECT_EQ(computed.size(), expectedSize);
+        for (auto i = 0; i < expectedSize; i++) {
             EXPECT_EQ(computed[i].start, expected[i].start);
             EXPECT_EQ(computed[i].end, expected[i].end);
             EXPECT_EQ(computed[i].classNumber, expected[i].classNumber);
-            EXPECT_NEAR(computed[i].fromValue, expected[i].fromValue, precision_test);
-            EXPECT_NEAR(computed[i].toValue, expected[i].toValue, precision_test);
+            EXPECT_NEAR(computed[i].fromValue, expected[i].fromValue, precision);
+            EXPECT_NEAR(computed[i].toValue, expected[i].toValue, precision);
         }
     }
-    TEST_F(TestMetrics, ComputeCutPointsProposedGCase)
+    TEST_F(TestFImdlp, ComputeCutPointsProposedGCase)
     {
         cutPoints_t computed, expected;
         expected = {
                 { 0, 3, -1, -3.4028234663852886e+38, 1.5 },
                 { 3, 4, -1, 1.5, 3.4028234663852886e+38 }
         };
+        int expectedSize = 2;
         X = { 0, 1, 2, 2 };
         y = { 1, 1, 1, 2 };
         fit(X, y);
         computeCutPointsProposed();
         computed = getCutPoints();
-        EXPECT_EQ(computed.size(), 2);
-        for (auto i = 0; i < 1; i++) {
+        EXPECT_EQ(computed.size(), expectedSize);
+        for (auto i = 0; i < expectedSize; i++) {
             EXPECT_EQ(computed[i].start, expected[i].start);
             EXPECT_EQ(computed[i].end, expected[i].end);
             EXPECT_EQ(computed[i].classNumber, expected[i].classNumber);
-            EXPECT_NEAR(computed[i].fromValue, expected[i].fromValue, precision_test);
-            EXPECT_NEAR(computed[i].toValue, expected[i].toValue, precision_test);
+            EXPECT_NEAR(computed[i].fromValue, expected[i].fromValue, precision);
+            EXPECT_NEAR(computed[i].toValue, expected[i].toValue, precision);
         }
     }
-    TEST_F(TestMetrics, ApplyCutPoints)
+    TEST_F(TestFImdlp, ApplyCutPoints)
     {
         cutPoints_t expected = {
             { 0, 4, 17, -3.4028234663852886e+38, 5.1 }, { 4, 6, 31, 5.1, 5.4 },

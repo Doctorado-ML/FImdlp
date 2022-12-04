@@ -4,7 +4,7 @@
 #include <utility>
 namespace mdlp {
     class CPPFImdlp {
-    private:
+    protected:
         bool proposed; // proposed algorithm or original algorithm
         int precision;
         bool debug;
@@ -16,7 +16,6 @@ namespace mdlp {
         int numClasses;
         cutPoints_t cutPoints;
 
-    protected:
         void setCutPoints(cutPoints_t);
         static indices_t sortIndices(samples&);
         void computeCutPointsOriginal();
