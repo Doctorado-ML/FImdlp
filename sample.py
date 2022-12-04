@@ -65,11 +65,11 @@ features = data.feature_names
 # test.fit(X, y, features=features)
 # test.transform(X)
 # test.get_cut_points()
-for proposed in [True, False]:
+for proposal in [True, False]:
     X = data.data
     y = data.target
-    print("*** Proposed: ", proposed)
-    test = CFImdlp(debug=True, proposed=proposed)
+    print("*** Proposal: ", proposal)
+    test = CFImdlp(debug=True, proposal=proposal)
     test.fit(X[:, 0], y)
     result = test.get_cut_points()
     for item in result:
@@ -118,7 +118,7 @@ for proposed in [True, False]:
 # X = [5.7, 5.3, 5.2, 5.1, 5.0, 5.6, 5.1, 6.0, 5.1, 5.9]
 # y = [1, 1, 1, 1, 1, 2, 2, 2, 2, 2]
 # indices = [4, 3, 6, 8, 2, 1, 5, 0, 9, 7]
-# clf = CFImdlp(debug=True, proposed=False)
+# clf = CFImdlp(debug=True, proposal=False)
 # clf.fit(X, y)
 # print(clf.get_cut_points())
 # y = [1, 1, 1, 1, 1, 2, 2, 2, 2, 2]

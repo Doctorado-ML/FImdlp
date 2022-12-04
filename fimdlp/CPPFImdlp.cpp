@@ -12,21 +12,24 @@ namespace mdlp {
         return os;
 
     }
-    CPPFImdlp::CPPFImdlp() : proposed(true), precision(6), debug(false)
+    CPPFImdlp::CPPFImdlp() : proposal(true), precision(6), debug(false)
     {
         divider = pow(10, precision);
         numClasses = 0;
     }
-    CPPFImdlp::CPPFImdlp(bool proposed, int precision, bool debug) : proposed(proposed), precision(precision), debug(debug)
+    CPPFImdlp::CPPFImdlp(bool proposal, int precision, bool debug) : proposal(proposal), precision(precision), debug(debug)
     {
         divider = pow(10, precision);
         numClasses = 0;
     }
     CPPFImdlp::~CPPFImdlp()
         = default;
-    std::vector<cutPoint_t> CPPFImdlp::getCutPoints()
+    samples CPPFImdlp::getCutPoints()
     {
-        return cutPoints;
+        samples output(cutPoints.size());
+        std::transform(cutPoints.begin(), cutPoints.end(), output.begin(),
+            [](cutPoint_t cut) { return cut.toValue; });
+        return output;
     }
     labels CPPFImdlp::getDiscretizedValues()
     {
@@ -48,28 +51,19 @@ namespace mdlp {
         this->xDiscretized = labels(X.size(), -1);
         this->numClasses = Metrics::numClasses(y, indices, 0, X.size());
 
-        if (proposed) {
-            computeCutPointsProposed();
+        if (proposal) {
+            computeCutPointsProposal();
         } else {
             computeCutPointsOriginal();
         }
         filterCutPoints();
-        applyCutPoints();
-        return *this;
-    }
-    labels& CPPFImdlp::transform(samples& X_)
-    {
-        indices_t indices_transform = sortIndices(X_);
-        applyCutPoints();
-        return xDiscretized;
-    }
-    void CPPFImdlp::applyCutPoints()
-    {
+        // Apply cut points to the input vector
         for (auto cut : cutPoints) {
             for (size_t i = cut.start; i < cut.end; i++) {
                 xDiscretized[indices[i]] = cut.classNumber;
             }
         }
+        return *this;
     }
     bool CPPFImdlp::evaluateCutPoint(cutPoint_t rest, cutPoint_t candidate)
     {
@@ -142,7 +136,7 @@ namespace mdlp {
         }
         cutPoints = filtered;
     }
-    void CPPFImdlp::computeCutPointsProposed()
+    void CPPFImdlp::computeCutPointsProposal()
     {
         cutPoints_t cutPts;
         cutPoint_t cutPoint;
@@ -206,7 +200,7 @@ namespace mdlp {
         if (debug) {
             std::cout << "Entropy of the dataset: " << Metrics::entropy(y, indices, 0, numElements + 1, numClasses) << std::endl;
             for (auto cutPt : cutPts)
-                std::cout << "Entropy: " << Metrics::entropy(y, indices, cutPt.start, cutPt.end, numClasses) << " :Proposed: Cut point: " << cutPt;
+                std::cout << "Entropy: " << Metrics::entropy(y, indices, cutPt.start, cutPt.end, numClasses) << " :Proposal: Cut point: " << cutPt;
         }
         cutPoints = cutPts;
     }

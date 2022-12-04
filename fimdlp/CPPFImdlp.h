@@ -5,7 +5,7 @@
 namespace mdlp {
     class CPPFImdlp {
     protected:
-        bool proposed; // proposed algorithm or original algorithm
+        bool proposal; // proposed algorithm or original algorithm
         int precision;
         bool debug;
         float divider;
@@ -19,21 +19,20 @@ namespace mdlp {
         void setCutPoints(cutPoints_t);
         static indices_t sortIndices(samples&);
         void computeCutPointsOriginal();
-        void computeCutPointsProposed();
+        void computeCutPointsProposal();
         bool evaluateCutPoint(cutPoint_t, cutPoint_t);
         void filterCutPoints();
-        void applyCutPoints();
 
     public:
         CPPFImdlp();
         CPPFImdlp(bool, int, bool debug = false);
         ~CPPFImdlp();
-        cutPoints_t getCutPoints();
+        samples getCutPoints();
         indices_t getIndices();
         labels getDiscretizedValues();
         void debugPoints(samples&, labels&);
         CPPFImdlp& fit(samples&, labels&);
-        labels& transform(samples&);
+        labels transform(samples&);
     };
 }
 #endif
