@@ -3,12 +3,13 @@
 #include <iostream>
 #include <algorithm>
 #include "Metrics.h"
+
 namespace mdlp {
-    std::ostream& operator << (std::ostream& os, const cutPoint_t& cut)
+    ostream& operator << (ostream& os, const cutPoint_t& cut)
     {
         os << cut.classNumber << " -> (" << cut.start << ", " << cut.end <<
             ") - (" << cut.fromValue << ", " << cut.toValue << ")  "
-            << std::endl;
+            << endl;
         return os;
 
     }
@@ -27,7 +28,7 @@ namespace mdlp {
     samples CPPFImdlp::getCutPoints()
     {
         samples output(cutPoints.size());
-        std::transform(cutPoints.begin(), cutPoints.end(), output.begin(),
+        ::transform(cutPoints.begin(), cutPoints.end(), output.begin(),
             [](cutPoint_t cut) { return cut.toValue; });
         return output;
     }
@@ -40,11 +41,11 @@ namespace mdlp {
         X = X_;
         y = y_;
         if (X.size() != y.size()) {
-            std::cerr << "X and y must have the same size" << std::endl;
+            cerr << "X and y must have the same size" << endl;
             return *this;
         }
         if (X.size() == 0) {
-            std::cerr << "X and y must have at least one element" << std::endl;
+            cerr << "X and y must have at least one element" << endl;
             return *this;
         }
         this->indices = sortIndices(X_);
@@ -84,10 +85,10 @@ namespace mdlp {
         delta = log2(pow(3, float(k)) - 2) - (float(k) * ent - float(k1) * ent1 - float(k2) * ent2);
         float term = 1 / N * (log2(N - 1) + delta);
         if (debug) {
-            std::cout << "Rest: " << rest;
-            std::cout << "Candidate: " << candidate;
-            std::cout << "k=" << k << " k1=" << k1 << " k2=" << k2 << " ent=" << ent << " ent1=" << ent1 << " ent2=" << ent2 << std::endl;
-            std::cout << "ig=" << ig << " delta=" << delta << " N " << N << " term " << term << std::endl;
+            cout << "Rest: " << rest;
+            cout << "Candidate: " << candidate;
+            cout << "k=" << k << " k1=" << k1 << " k2=" << k2 << " ent=" << ent << " ent1=" << ent1 << " ent2=" << ent2 << endl;
+            cout << "ig=" << ig << " delta=" << delta << " N " << N << " term " << term << endl;
         }
         return (ig > term);
     }
@@ -99,15 +100,15 @@ namespace mdlp {
 
         rest.start = 0;
         rest.end = X.size();
-        rest.fromValue = std::numeric_limits<float>::lowest();
-        rest.toValue = std::numeric_limits<float>::max();
+        rest.fromValue = numeric_limits<float>::lowest();
+        rest.toValue = numeric_limits<float>::max();
         rest.classNumber = classNumber;
         bool first = true;
         for (size_t index = 0; index < size_t(cutPoints.size()); index++) {
             item = cutPoints[index];
             if (evaluateCutPoint(rest, item)) {
                 if (debug)
-                    std::cout << "Accepted: " << item << std::endl;
+                    cout << "Accepted: " << item << endl;
                 //Assign class number to the interval (cutpoint)
                 item.classNumber = classNumber++;
                 filtered.push_back(item);
@@ -115,11 +116,11 @@ namespace mdlp {
                 rest.start = item.end;
             } else {
                 if (debug)
-                    std::cout << "Rejected: " << item << std::endl;
+                    cout << "Rejected: " << item << endl;
                 if (index != size_t(cutPoints.size()) - 1) {
                     // Try to merge the rejected cutpoint with the next one
                     if (first) {
-                        cutPoints[index + 1].fromValue = std::numeric_limits<float>::lowest();
+                        cutPoints[index + 1].fromValue = numeric_limits<float>::lowest();
                         cutPoints[index + 1].start = indices[0];
                     } else {
                         cutPoints[index + 1].fromValue = item.fromValue;
@@ -129,7 +130,7 @@ namespace mdlp {
             }
         }
         if (!first) {
-            filtered.back().toValue = std::numeric_limits<float>::max();
+            filtered.back().toValue = numeric_limits<float>::max();
             filtered.back().end = X.size() - 1;
         } else {
             filtered.push_back(rest);
@@ -175,7 +176,7 @@ namespace mdlp {
                 cutPoint.start = start;
                 cutPoint.end = idx;
                 start = idx;
-                cutPoint.fromValue = firstCutPoint ? std::numeric_limits<float>::lowest() : cutPts.back().toValue;
+                cutPoint.fromValue = firstCutPoint ? numeric_limits<float>::lowest() : cutPts.back().toValue;
                 cutPoint.toValue = (xPrev + xCur) / 2;
                 cutPoint.classNumber = -1;
                 firstCutPoint = false;
@@ -190,17 +191,17 @@ namespace mdlp {
         if (idx == numElements) {
             cutPoint.start = start;
             cutPoint.end = numElements + 1;
-            cutPoint.fromValue = firstCutPoint ? std::numeric_limits<float>::lowest() : cutPts.back().toValue;
-            cutPoint.toValue = std::numeric_limits<float>::max();
+            cutPoint.fromValue = firstCutPoint ? numeric_limits<float>::lowest() : cutPts.back().toValue;
+            cutPoint.toValue = numeric_limits<float>::max();
             cutPoint.classNumber = -1;
             if (debug)
                 printf("Final Cutpoint idx=%lu Cur(%3.1f, %d) Prev(%3.1f, %d) Pivot(%3.1f, %d) = (%3.1g, %3.1g] \n", idx, xCur, yCur, xPrev, yPrev, xPivot, yPivot, cutPoint.fromValue, cutPoint.toValue);
             cutPts.push_back(cutPoint);
         }
         if (debug) {
-            std::cout << "Entropy of the dataset: " << Metrics::entropy(y, indices, 0, numElements + 1, numClasses) << std::endl;
+            cout << "Entropy of the dataset: " << Metrics::entropy(y, indices, 0, numElements + 1, numClasses) << endl;
             for (auto cutPt : cutPts)
-                std::cout << "Entropy: " << Metrics::entropy(y, indices, cutPt.start, cutPt.end, numClasses) << " :Proposal: Cut point: " << cutPt;
+                cout << "Entropy: " << Metrics::entropy(y, indices, cutPt.start, cutPt.end, numClasses) << " :Proposal: Cut point: " << cutPt;
         }
         cutPoints = cutPts;
     }
@@ -224,7 +225,7 @@ namespace mdlp {
                 // if (totalEntropy - (entropyLeft + entropyRight) < 0) { Accept cut point }
                 if (first) {
                     first = false;
-                    cutPoint.fromValue = std::numeric_limits<float>::lowest();
+                    cutPoint.fromValue = numeric_limits<float>::lowest();
                 } else {
                     cutPoint.fromValue = cutPts.back().toValue;
                 }
@@ -241,16 +242,16 @@ namespace mdlp {
         if (first) {
             cutPoint.start = 0;
             cutPoint.classNumber = -1;
-            cutPoint.fromValue = std::numeric_limits<float>::lowest();
-            cutPoint.toValue = std::numeric_limits<float>::max();
+            cutPoint.fromValue = numeric_limits<float>::lowest();
+            cutPoint.toValue = numeric_limits<float>::max();
             cutPts.push_back(cutPoint);
         } else
-            cutPts.back().toValue = std::numeric_limits<float>::max();
+            cutPts.back().toValue = numeric_limits<float>::max();
         cutPts.back().end = X.size();
         if (debug) {
-            std::cout << "Entropy of the dataset: " << Metrics::entropy(y, indices, 0, indices.size(), numClasses) << std::endl;
+            cout << "Entropy of the dataset: " << Metrics::entropy(y, indices, 0, indices.size(), numClasses) << endl;
             for (auto cutPt : cutPts)
-                std::cout << "Entropy: " << Metrics::entropy(y, indices, cutPt.start, cutPt.end, numClasses) << ": Original: Cut point: " << cutPt;
+                cout << "Entropy: " << Metrics::entropy(y, indices, cutPt.start, cutPt.end, numClasses) << ": Original: Cut point: " << cutPt;
         }
         cutPoints = cutPts;
     }
@@ -258,8 +259,8 @@ namespace mdlp {
     indices_t CPPFImdlp::sortIndices(samples& X_)
     {
         indices_t idx(X_.size());
-        std::iota(idx.begin(), idx.end(), 0);
-        for (std::size_t i = 0; i < X_.size(); i++)
+        iota(idx.begin(), idx.end(), 0);
+        for (size_t i = 0; i < X_.size(); i++)
             stable_sort(idx.begin(), idx.end(), [&X_](size_t i1, size_t i2)
                 { return X_[i1] < X_[i2]; });
         return idx;

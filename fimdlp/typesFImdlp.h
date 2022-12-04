@@ -1,6 +1,8 @@
 #ifndef TYPES_H
 #define TYPES_H
 #include <vector>
+
+using namespace std;
 namespace mdlp {
     struct CutPointBody {
         size_t start, end;        // indices of the sorted vector
@@ -8,9 +10,9 @@ namespace mdlp {
         float fromValue, toValue;
     };
     typedef CutPointBody cutPoint_t;
-    typedef std::vector<float> samples;
-    typedef std::vector<int> labels;
-    typedef std::vector<size_t> indices_t;
-    typedef std::vector<cutPoint_t> cutPoints_t;
+    typedef vector<float> samples;
+    typedef vector<int> labels;
+    typedef vector<size_t> indices_t;
+    typedef vector<cutPoint_t> cutPoints_t;
 }
 #endif

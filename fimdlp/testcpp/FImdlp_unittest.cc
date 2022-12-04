@@ -49,6 +49,14 @@ namespace mdlp {
                 EXPECT_NEAR(cutPoints[i].toValue, expected[i].toValue, precision);
             }
         }
+        template<typename T, typename A>
+        void checkVectors(std::vector<T, A> const& expected, std::vector<T, A> const& computed)
+        {
+            EXPECT_EQ(expected.size(), computed.size());
+            for (auto i = 0; i < expected.size(); i++) {
+                EXPECT_EQ(expected[i], computed[i]);
+            }
+        }
 
     };
     TEST_F(TestFImdlp, SortIndices)
@@ -72,7 +80,7 @@ namespace mdlp {
     }
     TEST_F(TestFImdlp, ComputeCutPointsOriginal)
     {
-        cutPoints_t computed, expected;
+        cutPoints_t  expected;
         expected = {
             { 0, 4, -1, -3.4028234663852886e+38, 5.15 }, { 4, 6, -1, 5.15, 5.45 },
             { 6, 10, -1, 5.45, 3.4028234663852886e+38 }
@@ -83,7 +91,7 @@ namespace mdlp {
     }
     TEST_F(TestFImdlp, ComputeCutPointsOriginalGCase)
     {
-        cutPoints_t computed, expected;
+        cutPoints_t  expected;
         expected = {
                 { 0, 4, -1, -3.4028234663852886e+38, 3.4028234663852886e+38 },
         };
@@ -95,7 +103,7 @@ namespace mdlp {
     }
     TEST_F(TestFImdlp, ComputeCutPointsProposal)
     {
-        cutPoints_t computed, expected;
+        cutPoints_t  expected;
         expected = {
             { 0, 4, -1, -3.4028234663852886e+38, 5.1 }, { 4, 6, -1, 5.1, 5.4 },
             { 6, 9, -1, 5.4, 5.85 },
@@ -106,7 +114,7 @@ namespace mdlp {
     }
     TEST_F(TestFImdlp, ComputeCutPointsProposalGCase)
     {
-        cutPoints_t computed, expected;
+        cutPoints_t  expected;
         expected = {
                 { 0, 3, -1, -3.4028234663852886e+38, 1.5 },
                 { 3, 4, -1, 1.5, 3.4028234663852886e+38 }
@@ -116,5 +124,18 @@ namespace mdlp {
         fit(X, y);
         computeCutPointsProposal();
         checkCutPoints(expected);
+    }
+    TEST_F(TestFImdlp, DiscretizedValues)
+    {
+        labels computed, expected = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        computed = getDiscretizedValues();
+        checkVectors(expected, computed);
+    }
+    TEST_F(TestFImdlp, GetCutPoints)
+    {
+        samples computed, expected = { 5.15, 5.45, 3.4028234663852886e+38 };
+        computeCutPointsOriginal();
+        computed = getCutPoints();
+        checkVectors(expected, computed);
     }
 }

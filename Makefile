@@ -11,6 +11,7 @@ test:
 	cd fimdlp/testcpp && ./test
 
 coverage:
+	make test
 	cd fimdlp/testcpp && ./cover
 
 lint:  ## Lint and static-check
