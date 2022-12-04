@@ -175,7 +175,10 @@ namespace mdlp {
                     printf(">idx=%lu -> Prev(%3.1f, %d) Pivot(%3.1f, %d) Cur(%3.1f, %d) \n", idx, xPrev, yPrev, xPivot, yPivot, xCur, yCur);
             }
             while (idx < numElements && xCur == xPivot);
-            if (yPivot == -1 || yPrev != yCur) {
+            // Check if the class changed and there are more than 1 element
+            if ((idx - start > 1) && (yPivot == -1 || yPrev != yCur)) {
+                // Must we add the entropy criteria here?
+                // if (totalEntropy - (entropyLeft + entropyRight) < 0) { Accept cut point }
                 cutPoint.start = start;
                 cutPoint.end = idx;
                 start = idx;
@@ -201,9 +204,11 @@ namespace mdlp {
                 printf("Final Cutpoint idx=%lu Cur(%3.1f, %d) Prev(%3.1f, %d) Pivot(%3.1f, %d) = (%3.1g, %3.1g] \n", idx, xCur, yCur, xPrev, yPrev, xPivot, yPivot, cutPoint.fromValue, cutPoint.toValue);
             cutPts.push_back(cutPoint);
         }
-        if (debug)
+        if (debug) {
+            std::cout << "Entropy of the dataset: " << Metrics::entropy(y, indices, 0, numElements + 1, numClasses) << std::endl;
             for (auto cutPt : cutPts)
-                std::cout << "Proposed: Cut point: " << cutPt;
+                std::cout << "Entropy: " << Metrics::entropy(y, indices, cutPt.start, cutPt.end, numClasses) << " :Proposed: Cut point: " << cutPt;
+        }
         cutPoints = cutPts;
     }
     void CPPFImdlp::computeCutPointsOriginal()
@@ -219,8 +224,11 @@ namespace mdlp {
         yPrev = y[idx];
         for (index = 0; index < size_t(indices.size()) - 1; index++) {
             idx = indices[index];
-            //  Definition 2 Cut points are always on boundaries
-            if (y[idx] != yPrev && xPrev < X[idx]) {
+            // Definition 2 Cut points are always on class boundaries && 
+            // there are more than 1 items in the interval
+            if (y[idx] != yPrev && xPrev < X[idx] && idxPrev != index - 1) {
+                // Must we add the entropy criteria here?
+                // if (totalEntropy - (entropyLeft + entropyRight) < 0) { Accept cut point }
                 if (first) {
                     first = false;
                     cutPoint.fromValue = std::numeric_limits<float>::lowest();
@@ -246,9 +254,11 @@ namespace mdlp {
         } else
             cutPts.back().toValue = std::numeric_limits<float>::max();
         cutPts.back().end = X.size();
-        if (debug)
+        if (debug) {
+            std::cout << "Entropy of the dataset: " << Metrics::entropy(y, indices, 0, indices.size(), numClasses) << std::endl;
             for (auto cutPt : cutPts)
-                std::cout << "Original: Cut point: " << cutPt;
+                std::cout << "Entropy: " << Metrics::entropy(y, indices, cutPt.start, cutPt.end, numClasses) << ": Original: Cut point: " << cutPt;
+        }
         cutPoints = cutPts;
     }
     // Argsort from https://stackoverflow.com/questions/1577475/c-sorting-and-keeping-track-of-indexes
