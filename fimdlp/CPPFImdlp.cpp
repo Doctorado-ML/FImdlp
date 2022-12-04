@@ -41,12 +41,10 @@ namespace mdlp {
         X = X_;
         y = y_;
         if (X.size() != y.size()) {
-            cerr << "X and y must have the same size" << endl;
-            return *this;
+            throw invalid_argument("X and y must have the same size");
         }
-        if (X.size() == 0) {
-            cerr << "X and y must have at least one element" << endl;
-            return *this;
+        if (X.size() == 0 || y.size() == 0) {
+            throw invalid_argument("X and y must have at least one element");
         }
         this->indices = sortIndices(X_);
         this->xDiscretized = labels(X.size(), -1);

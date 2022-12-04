@@ -59,6 +59,18 @@ namespace mdlp {
         }
 
     };
+    TEST_F(TestFImdlp, FitErrorEmptyDataset)
+    {
+        X = samples();
+        y = labels();
+        EXPECT_THROW(fit(X, y), std::invalid_argument);
+    }
+    TEST_F(TestFImdlp, FitErrorDifferentSize)
+    {
+        X = { 1, 2, 3 };
+        y = { 1, 2 };
+        EXPECT_THROW(fit(X, y), std::invalid_argument);
+    }
     TEST_F(TestFImdlp, SortIndices)
     {
         X = { 5.7, 5.3, 5.2, 5.1, 5.0, 5.6, 5.1, 6.0, 5.1, 5.9 };
