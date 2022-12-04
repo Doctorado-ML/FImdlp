@@ -100,7 +100,7 @@ namespace mdlp {
     void CPPFImdlp::filterCutPoints()
     {
         cutPoints_t filtered;
-        cutPoint_t rest;
+        cutPoint_t rest, item;
         int classNumber = 0;
 
         rest.start = 0;
@@ -108,31 +108,30 @@ namespace mdlp {
         rest.fromValue = std::numeric_limits<float>::lowest();
         rest.toValue = std::numeric_limits<float>::max();
         rest.classNumber = classNumber;
-        bool lastReject = false, first = true;
-        for (auto item : cutPoints) {
+        bool first = true;
+        for (size_t index = 0; index < size_t(cutPoints.size()); index++) {
+            item = cutPoints[index];
             if (evaluateCutPoint(rest, item)) {
                 if (debug)
-                    std::cout << "Accepted" << std::endl;
-                if (lastReject) {
-                    //Try to merge rejected intervals
-                    if (first) {
-                        item.fromValue = std::numeric_limits<float>::lowest();
-                        item.start = indices[0];
-                    } else {
-                        item.fromValue = filtered.back().toValue;
-                        item.start = filtered.back().end;
-                    }
-                }
+                    std::cout << "Accepted: " << item << std::endl;
                 //Assign class number to the interval (cutpoint)
                 item.classNumber = classNumber++;
                 filtered.push_back(item);
                 first = false;
                 rest.start = item.end;
-                lastReject = false;
             } else {
                 if (debug)
-                    std::cout << "Rejected" << std::endl;
-                lastReject = true;
+                    std::cout << "Rejected: " << item << std::endl;
+                if (index != size_t(cutPoints.size()) - 1) {
+                    // Try to merge the rejected cutpoint with the next one
+                    if (first) {
+                        cutPoints[index + 1].fromValue = std::numeric_limits<float>::lowest();
+                        cutPoints[index + 1].start = indices[0];
+                    } else {
+                        cutPoints[index + 1].fromValue = item.fromValue;
+                        cutPoints[index + 1].start = item.start;
+                    }
+                }
             }
         }
         if (!first) {
