@@ -267,8 +267,4 @@ namespace mdlp {
     {
         cutPoints = cutPoints_;
     }
-    indices_t CPPFImdlp::getIndices()
-    {
-        return indices;
-    }
 }

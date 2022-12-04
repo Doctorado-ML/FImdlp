@@ -6,6 +6,8 @@ clean: ## Clean up
 	rm -rf build dist *.egg-info
 	if [ -f fimdlp/cfimdlp.cpp ]; then rm fimdlp/cfimdlp.cpp; fi;
 	if [ -f fimdlp/cppfimdlp.cpython-310-darwin.so ]; then rm fimdlp/cppfimdlp.cpython-310-darwin.so; fi;
+	if [ -d fimdlp/testcpp/build ]; then rm -fr fimdlp/testcpp/build/*  ; fi;
+	if [ -d fimdlp/testcpp/lcoverage ]; then rm -fr fimdlp/testcpp/lcoverage/*  ; fi;
 
 test:
 	cd fimdlp/testcpp && ./test

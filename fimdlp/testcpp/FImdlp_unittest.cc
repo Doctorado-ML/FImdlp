@@ -13,6 +13,10 @@ namespace mdlp {
             y = { 1, 1, 1, 1, 1, 2, 2, 2, 2, 2 };
             fit(X, y);
         }
+        void setProposal(bool value)
+        {
+            proposal = value;
+        }
         void initCutPoints()
         {
             setCutPoints(cutPoints_t());
@@ -149,5 +153,25 @@ namespace mdlp {
         computeCutPointsOriginal();
         computed = getCutPoints();
         checkVectors(expected, computed);
+    }
+    TEST_F(TestFImdlp, Constructor)
+    {
+        samples X = { 5.7, 5.3, 5.2, 5.1, 5.0, 5.6, 5.1, 6.0, 5.1, 5.9 };
+        labels y = { 1, 1, 1, 1, 1, 2, 2, 2, 2, 2 };
+        setProposal(false);
+        fit(X, y);
+        computeCutPointsOriginal();
+        cutPoints_t expected;
+        vector<float> computed = getCutPoints();
+        expected = {
+            { 0, 4, -1, -3.4028234663852886e+38, 5.15 }, { 4, 6, -1, 5.15, 5.45 },
+            { 6, 10, -1, 5.45, 3.4028234663852886e+38 }
+        };
+        computed = getCutPoints();
+        int expectedSize = expected.size();
+        EXPECT_EQ(computed.size(), expected.size());
+        for (auto i = 0; i < expectedSize; i++) {
+            EXPECT_NEAR(computed[i], expected[i].toValue, .00000001);
+        }
     }
 }
