@@ -90,10 +90,6 @@ class FImdlp(TransformerMixin, BaseEstimator):
 
         # Input validation
         X = check_array(X)
-        if (X != self.X_).any():
-            raise ValueError(
-                "X values are not the same as the ones used to fit the model."
-            )
 
         # Check that the input is of the same shape as the one passed
         # during fit.
@@ -107,6 +103,12 @@ class FImdlp(TransformerMixin, BaseEstimator):
             result[:, feature] = np.searchsorted(
                 self.cut_points_[feature], X[:, feature]
             )
+        return result
+
+    def get_cut_points(self):
+        result = []
+        for feature in range(self.n_features_):
+            result.append(self.cut_points_[feature][:-1])
         return result
 
     def test(self):

@@ -10,6 +10,7 @@ clean: ## Clean up
 	if [ -d fimdlp/testcpp/lcoverage ]; then rm -fr fimdlp/testcpp/lcoverage/*  ; fi;
 
 test:
+	python -m unittest -v fimdlp.tests
 	cd fimdlp/testcpp && ./test
 
 coverage:
