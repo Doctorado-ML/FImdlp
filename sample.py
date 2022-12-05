@@ -126,3 +126,4 @@ for proposal in [True, False]:
 # indices2 = np.argsort(X)
 # Xs = np.array(X)[indices2]
 # ys = np.array(y)[indices2]
+kdd_JapaneseVowels

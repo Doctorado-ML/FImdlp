@@ -133,3 +133,4 @@ cfimdlp.cpp
 cmake-build-debug
 cmake-build-debug/**
 **/lcoverage/**
+**/x/*

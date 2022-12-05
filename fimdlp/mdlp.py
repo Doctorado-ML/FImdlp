@@ -20,6 +20,18 @@ class FImdlp(TransformerMixin, BaseEstimator):
     ----------
     n_features_ : int
         The number of features of the data passed to :meth:`fit`.
+    discretizer_ : list
+        The list of discretizers for each feature.
+    cut_points_ : list
+        The list of cut points for each feature.
+    X_ : array 
+        the samples used to fit, shape (n_samples, n_features)
+    y_ : array 
+        the labels used to fit, shape (n_samples,)
+    discretized_X_ : 
+        array of the discretized samples passed to fit(n_samples, n_features)
+    features_ : list
+        the list of features to be discretized
     """
 
     def _check_params_fit(self, X, y, expected_args, kwargs):
@@ -30,17 +42,23 @@ class FImdlp(TransformerMixin, BaseEstimator):
         self.classes_ = unique_labels(y)
         self.n_classes_ = self.classes_.shape[0]
         # Default values
-        self.class_name_ = "class"
-        self.features_ = [f"feature_{i}" for i in range(X.shape[1])]
+        self.features_ = [i for i in range(X.shape[1])]
         for key, value in kwargs.items():
             if key in expected_args:
                 setattr(self, f"{key}_", value)
             else:
                 raise ValueError(f"Unexpected argument: {key}")
-        if len(self.features_) != X.shape[1]:
+        if len(self.features_) > X.shape[1]:
             raise ValueError(
                 "Number of features does not match the number of columns in X"
             )
+        if type(self.features_) != list:
+            raise ValueError("features must be a list")
+        self.features_.sort()
+        if list(set(self.features_)) != self.features_:
+            raise ValueError("Features must be unique")
+        if max(self.features_) >= X.shape[1]:
+            raise ValueError("Feature index out of range")
         return X, y
 
     def fit(self, X, y, **kwargs):
@@ -58,7 +76,7 @@ class FImdlp(TransformerMixin, BaseEstimator):
             Returns self.
         """
         X, y = self._check_params_fit(
-            X, y, expected_args=["class_name", "features"], kwargs=kwargs
+            X, y, expected_args=["features"], kwargs=kwargs
         )
         self.n_features_ = X.shape[1]
         self.X_ = X
@@ -66,13 +84,33 @@ class FImdlp(TransformerMixin, BaseEstimator):
         self.discretizer_ = [None] * self.n_features_
         self.cut_points_ = [None] * self.n_features_
         # Can do it in parallel
-        for feature in range(self.n_features_):
+        for feature in self.features_:
             self.discretizer_[feature] = CFImdlp(proposal=self.proposal)
             self.discretizer_[feature].fit(X[:, feature], y)
             self.cut_points_[feature] = self.discretizer_[
                 feature
             ].get_cut_points()
         return self
+
+    def get_fitted(self):
+        """Return the discretized X computed during fit.
+
+        Returns
+        -------
+        X_transformed : array, shape (n_samples, n_features)
+            discretized X computed during fit.
+        """
+        # Check is fit had been called
+        check_is_fitted(self, "n_features_")
+        result = np.zeros_like(self.X_, dtype=np.int32) - 1
+        for feature in range(self.n_features_):
+            if feature in self.features_:
+                result[:, feature] = self.discretizer_[
+                    feature
+                ].get_discretized_values()
+            else:
+                result[:, feature] = self.X_[:, feature]
+        return result
 
     def transform(self, X):
         """Discretize X values.
@@ -100,9 +138,12 @@ class FImdlp(TransformerMixin, BaseEstimator):
         result = np.zeros_like(X, dtype=np.int32) - 1
         # Can do it in parallel
         for feature in range(self.n_features_):
-            result[:, feature] = np.searchsorted(
-                self.cut_points_[feature], X[:, feature]
-            )
+            if feature in self.features_:
+                result[:, feature] = np.searchsorted(
+                    self.cut_points_[feature], X[:, feature]
+                )
+            else:
+                result[:, feature] = X[:, feature]
         return result
 
     def get_cut_points(self):
