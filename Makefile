@@ -10,13 +10,14 @@ clean: ## Clean up
 	if [ -d fimdlp/testcpp/lcoverage ]; then rm -fr fimdlp/testcpp/lcoverage/*  ; fi;
 
 test:
-	python -m unittest -v fimdlp.tests
+	coverage run -m unittest -v fimdlp.tests
 	cd fimdlp/testcpp && ./test
 
 coverage:
 	if [ -d fimdlp/testcpp/build/CMakeFiles ]; then rm -fr fimdlp/testcpp/build/CMakeFiles/*  ; fi;
 	make test
 	cd fimdlp/testcpp && ./cover
+	coverage report -m
 
 lint:  ## Lint and static-check
 	black fimdlp

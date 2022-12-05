@@ -31,8 +31,22 @@ class FImdlpTest(unittest.TestCase):
             [0.75, 1.399999976158142, 1.5],
         ]
         self.assertListEqual(expected, clf.get_cut_points())
+        self.assertListEqual(
+            ["feature_0", "feature_1", "feature_2", "feature_3"], clf.features_
+        )
+        self.assertEqual("class", clf.class_name_)
+        clf.fit(X, y, features=["a", "b", "c", "d"], class_name="class_name")
+        self.assertListEqual(["a", "b", "c", "d"], clf.features_)
+        self.assertEqual("class_name", clf.class_name_)
+
+    def test_fit_Errors(self):
+        clf = FImdlp()
         with self.assertRaises(ValueError):
             clf.fit([[1, 2], [3, 4]], [1, 2, 3])
+        with self.assertRaises(ValueError):
+            clf.fit([[1, 2], [3, 4]], [1, 2], features=["a", "b", "c"])
+        with self.assertRaises(ValueError):
+            clf.fit([[1, 2], [3, 4]], [1, 2], unexpected="class_name")
 
     def test_transform(self):
         clf = FImdlp()
