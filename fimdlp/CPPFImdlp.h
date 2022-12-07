@@ -22,6 +22,7 @@ namespace mdlp {
         void computeCutPointsProposal();
         bool evaluateCutPoint(cutPoint_t, cutPoint_t);
         void filterCutPoints();
+        bool goodCut(size_t, size_t, size_t); // if the cut candidate reduces entropy
 
     public:
         CPPFImdlp();

@@ -46,9 +46,9 @@ namespace mdlp {
         if (X.size() == 0 || y.size() == 0) {
             throw invalid_argument("X and y must have at least one element");
         }
-        this->indices = sortIndices(X_);
-        this->xDiscretized = labels(X.size(), -1);
-        this->numClasses = Metrics::numClasses(y, indices, 0, X.size());
+        indices = sortIndices(X_);
+        xDiscretized = labels(X.size(), -1);
+        numClasses = Metrics::numClasses(y, indices, 0, X.size());
 
         if (proposal) {
             computeCutPointsProposal();
@@ -168,9 +168,9 @@ namespace mdlp {
             }
             while (idx < numElements && xCur == xPivot);
             // Check if the class changed and there are more than 1 element
-            if ((idx - start > 1) && (yPivot == -1 || yPrev != yCur)) {
+            if ((idx - start > 1) && (yPivot == -1 || yPrev != yCur) && goodCut(start, idx, numElements + 1)) {
                 // Must we add the entropy criteria here?
-                // if (totalEntropy - (entropyLeft + entropyRight) < 0) { Accept cut point }
+                // if (totalEntropy - (entropyLeft + entropyRight) > 0) { Accept cut point }
                 cutPoint.start = start;
                 cutPoint.end = idx;
                 start = idx;
@@ -211,16 +211,17 @@ namespace mdlp {
         int yPrev;
         bool first = true;
         // idxPrev is the index of the init instance of the cutPoint
-        size_t index, idxPrev = 0, idx = indices[0];
+        size_t index, idxPrev = 0, last, idx = indices[0];
         xPrev = X[idx];
         yPrev = y[idx];
-        for (index = 0; index < size_t(indices.size()) - 1; index++) {
+        last = indices.size() - 1;
+        for (index = 0; index < last; index++) {
             idx = indices[index];
             // Definition 2 Cut points are always on class boundaries && 
             // there are more than 1 items in the interval
-            if (y[idx] != yPrev && xPrev < X[idx] && idxPrev != index - 1) {
+             // if (entropy of interval) > (entropyLeft + entropyRight)) { Accept cut point } (goodCut)
+            if (y[idx] != yPrev && xPrev < X[idx] && idxPrev != index - 1 && goodCut(idxPrev, idx, last + 1)) {
                 // Must we add the entropy criteria here?
-                // if (totalEntropy - (entropyLeft + entropyRight) < 0) { Accept cut point }
                 if (first) {
                     first = false;
                     cutPoint.fromValue = numeric_limits<float>::lowest();
@@ -252,6 +253,21 @@ namespace mdlp {
                 cout << "Entropy: " << Metrics::entropy(y, indices, cutPt.start, cutPt.end, numClasses) << ": Original: Cut point: " << cutPt;
         }
         cutPoints = cutPts;
+    }
+    bool CPPFImdlp::goodCut(size_t start, size_t cut, size_t end)
+    {
+        /*
+        Meter las entropías en una matríz cuadrada dispersa (samples, samples) M[start, end] iniciada a -1 y si no se ha calculado calcularla y almacenarla
+
+
+        */
+        float entropyLeft = Metrics::entropy(y, indices, start, cut, numClasses);
+        float entropyRight = Metrics::entropy(y, indices, cut, end, numClasses);
+        float entropyInterval = Metrics::entropy(y, indices, start, end, numClasses);
+        if (debug)
+            printf("Entropy L, R, T: L(%5.3g) + R(%5.3g) - T(%5.3g) \t", entropyLeft, entropyRight, entropyInterval);
+        //return (entropyInterval - (entropyLeft + entropyRight) > 0);
+        return true;
     }
     // Argsort from https://stackoverflow.com/questions/1577475/c-sorting-and-keeping-track-of-indexes
     indices_t CPPFImdlp::sortIndices(samples& X_)
