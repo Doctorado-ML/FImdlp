@@ -1,5 +1,6 @@
 import numpy as np
 from .cppfimdlp import CFImdlp
+from .pyfimdlp import PyFImdlp
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
@@ -85,7 +86,7 @@ class FImdlp(TransformerMixin, BaseEstimator):
         self.cut_points_ = [None] * self.n_features_
         # Can do it in parallel
         for feature in self.features_:
-            self.discretizer_[feature] = CFImdlp(proposal=self.proposal)
+            self.discretizer_[feature] = PyFImdlp(proposal=self.proposal)
             self.discretizer_[feature].fit(X[:, feature], y)
             self.cut_points_[feature] = self.discretizer_[
                 feature
@@ -149,5 +150,5 @@ class FImdlp(TransformerMixin, BaseEstimator):
     def get_cut_points(self):
         result = []
         for feature in range(self.n_features_):
-            result.append(self.cut_points_[feature][:-1])
+            result.append(self.cut_points_[feature])
         return result
