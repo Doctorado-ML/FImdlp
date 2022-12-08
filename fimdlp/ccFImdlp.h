@@ -17,17 +17,14 @@ namespace mdlp {
         xcutPoints_t xCutPoints;
 
         static indices_t sortIndices(samples&);
-        void computeCutPointsRecursive(size_t, size_t);
-        xcutPoint_t getCandidate(size_t, size_t);
+        void computeCutPoints(size_t, size_t);
+        long int getCandidate(size_t, size_t);
         bool mdlp(size_t, size_t, size_t);
-        void simulateCutPointsRecursive();
-        int getCandidateSimulate(size_t, size_t);
 
     public:
         CPPFImdlp();
         CPPFImdlp(bool, int, bool debug = false);
         ~CPPFImdlp();
-        indices_t getIndices();
         CPPFImdlp& fitx(samples&, labels&);
         samples getCutPointsx();
     };
