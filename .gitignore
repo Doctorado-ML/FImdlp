@@ -33,8 +33,8 @@ MANIFEST
 *.manifest
 *.spec
 
-# Installer logs
-pip-log.txt
+# Installer log2s
+pip-log2.txt
 pip-delete-this-directory.txt
 
 # Unit test / coverage reports
@@ -56,7 +56,7 @@ coverage.xml
 *.pot
 
 # Django stuff:
-*.log
+*.log2
 local_settings.py
 db.sqlite3
 db.sqlite3-journal

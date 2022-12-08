@@ -86,7 +86,9 @@ class FImdlp(TransformerMixin, BaseEstimator):
         self.cut_points_ = [None] * self.n_features_
         # Can do it in parallel
         for feature in self.features_:
-            self.discretizer_[feature] = PyFImdlp(proposal=self.proposal)
+            self.discretizer_[feature] = CFImdlp(
+                proposal=self.proposal, debug=False
+            )
             self.discretizer_[feature].fit(X[:, feature], y)
             self.cut_points_[feature] = self.discretizer_[
                 feature
@@ -132,10 +134,10 @@ class FImdlp(TransformerMixin, BaseEstimator):
 
         # Check that the input is of the same shape as the one passed
         # during fit.
-        if X.shape[1] != self.n_features_:
-            raise ValueError(
-                "Shape of input is different from what was seen in `fit`"
-            )
+        # if X.shape[1] != self.n_features_:
+        #     raise ValueError(
+        #         "Shape of input is different from what was seen in `fit`"
+        #     )
         result = np.zeros_like(X, dtype=np.int32) - 1
         # Can do it in parallel
         for feature in range(self.n_features_):

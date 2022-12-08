@@ -13,12 +13,12 @@ namespace mdlp {
         return os;
 
     }
-    CPPFImdlp::CPPFImdlp() : proposal(true), precision(6), debug(false)
+    CPPFImdlp::CPPFImdlp(): proposal(true), precision(6), debug(false)
     {
         divider = pow(10, precision);
         numClasses = 0;
     }
-    CPPFImdlp::CPPFImdlp(bool proposal, int precision, bool debug) : proposal(proposal), precision(precision), debug(debug)
+    CPPFImdlp::CPPFImdlp(bool proposal, int precision, bool debug): proposal(proposal), precision(precision), debug(debug)
     {
         divider = pow(10, precision);
         numClasses = 0;

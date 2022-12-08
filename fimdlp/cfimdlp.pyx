@@ -3,7 +3,7 @@
 from libcpp.vector cimport vector
 from libcpp cimport bool
 
-cdef extern from "CPPFImdlp.h" namespace "mdlp":
+cdef extern from "ccFImdlp.h" namespace "mdlp":
     cdef struct CutPointBody:
         size_t start, end;
         int classNumber;
@@ -11,9 +11,8 @@ cdef extern from "CPPFImdlp.h" namespace "mdlp":
     cdef cppclass CPPFImdlp:
         CPPFImdlp() except + 
         CPPFImdlp(bool, int, bool) except + 
-        CPPFImdlp& fit(vector[float]&, vector[int]&)
-        vector[int] getDiscretizedValues()
-        vector[float] getCutPoints()
+        CPPFImdlp& fitx(vector[float]&, vector[int]&)
+        vector[float] getCutPointsx()
         
 
 class PcutPoint_t:
@@ -31,10 +30,8 @@ cdef class CFImdlp:
     def __dealloc__(self):
         del self.thisptr
     def fit(self, X, y):
-        self.thisptr.fit(X, y)
+        self.thisptr.fitx(X, y)
         return self
-    def get_discretized_values(self):
-        return self.thisptr.getDiscretizedValues()
     def get_cut_points(self):
-        return self.thisptr.getCutPoints()
+        return self.thisptr.getCutPointsx()
  

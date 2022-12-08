@@ -1,8 +1,13 @@
 from sklearn.datasets import load_iris
 from fimdlp.mdlp import FImdlp
 from fimdlp.cppfimdlp import CFImdlp
+from sklearn.ensemble import RandomForestClassifier
 import numpy as np
-from math import log
+import time
+from math import log2
+
+from scipy.io import arff
+import pandas as pd
 
 
 def entropy(y: np.array) -> float:
@@ -30,7 +35,7 @@ def entropy(y: np.array) -> float:
     # Compute standard entropy.
     for prop in proportions:
         if prop != 0.0:
-            entropy -= prop * log(prop, 2)
+            entropy -= prop * log2(prop, 2)
     return entropy
 
 
@@ -57,14 +62,37 @@ def information_gain(
         return result
 
 
-data = load_iris()
-X = data.data
-y = data.target
-features = data.feature_names
+class_name = "speaker"
+file_name = "kdd_JapaneseVowels.arff"
+data = arff.loadarff(file_name)
+df = pd.DataFrame(data[0])
+df.dropna(axis=0, how="any", inplace=True)
+dataset = df
+X = df.drop(class_name, axis=1)
+features = X.columns
+class_name = class_name
+y, _ = pd.factorize(df[class_name])
+X = X.to_numpy()
+
+# data = load_iris()
+# X = data.data
+# y = data.target
+# features = data.feature_names
+
+
 test = FImdlp()
-test.fit(X, y)
-test.transform(X)
+now = time.time()
+test.fit(X, y, features=[i for i in (range(3, 14))])
+fit_time = time.time()
+print("Fitting: ", fit_time - now)
+now = time.time()
+Xt = test.transform(X)
+print("Transforming: ", time.time() - now)
 print(test.get_cut_points())
+
+clf = RandomForestClassifier(random_state=0)
+print(clf.fit(Xt, y).score(Xt, y))
+
 # for proposal in [True, False]:
 #     X = data.data
 #     y = data.target

@@ -26,7 +26,7 @@ namespace mdlp {
                 entropy -= p * log2(p);
             }
         }
-        return entropy;
+        return entropy < 0 ? 0 : entropy;
     }
     float Metrics::informationGain(labels& y, indices_t& indices, size_t start, size_t end, size_t cutPoint, int nClasses)
     {
@@ -45,3 +45,13 @@ namespace mdlp {
     }
 
 }
+/*
+  cache_t entropyCache;
+  std::map<std::tuple<int, int>, double> c;
+
+  // Set the value at index (3, 5) to 7.8.
+  c[std::make_tuple(3, 5)] = 7.8;
+
+  // Print the value at index (3, 5).
+  std::cout << c[std::make_tuple(3, 5)] << std::endl;
+*/
