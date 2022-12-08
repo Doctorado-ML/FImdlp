@@ -9,61 +9,11 @@ from math import log2
 from scipy.io import arff
 import pandas as pd
 
-
-def entropy(y: np.array) -> float:
-    """Compute entropy of a labels set
-
-    Parameters
-    ----------
-    y : np.array
-        set of labels
-
-    Returns
-    -------
-    float
-        entropy
-    """
-    n_labels = len(y)
-    if n_labels <= 1:
-        return 0
-    counts = np.bincount(y)
-    proportions = counts / n_labels
-    n_classes = np.count_nonzero(proportions)
-    if n_classes <= 1:
-        return 0
-    entropy = 0.0
-    # Compute standard entropy.
-    for prop in proportions:
-        if prop != 0.0:
-            entropy -= prop * log2(prop, 2)
-    return entropy
-
-
-def information_gain(
-    labels: np.array, labels_up: np.array, labels_dn: np.array
-) -> float:
-    imp_prev = entropy(labels)
-    card_up = card_dn = imp_up = imp_dn = 0
-    if labels_up is not None:
-        card_up = labels_up.shape[0]
-        imp_up = entropy(labels_up)
-    if labels_dn is not None:
-        card_dn = labels_dn.shape[0] if labels_dn is not None else 0
-        imp_dn = entropy(labels_dn)
-    samples = card_up + card_dn
-    if samples == 0:
-        return 0.0
-    else:
-        result = (
-            imp_prev
-            - (card_up / samples) * imp_up
-            - (card_dn / samples) * imp_dn
-        )
-        return result
-
-
-class_name = "speaker"
-file_name = "kdd_JapaneseVowels.arff"
+# class_name = "speaker"
+# file_name = "kdd_JapaneseVowels.arff"
+class_name = "class"
+# file_name = "mfeat-factors.arff"
+file_name = "letter.arff"
 data = arff.loadarff(file_name)
 df = pd.DataFrame(data[0])
 df.dropna(axis=0, how="any", inplace=True)
@@ -82,7 +32,8 @@ X = X.to_numpy()
 
 test = FImdlp()
 now = time.time()
-test.fit(X, y, features=[i for i in (range(3, 14))])
+# test.fit(X, y, features=[i for i in (range(3, 14))])
+test.fit(X, y)
 fit_time = time.time()
 print("Fitting: ", fit_time - now)
 now = time.time()
@@ -92,7 +43,7 @@ print(test.get_cut_points())
 
 clf = RandomForestClassifier(random_state=0)
 print(clf.fit(Xt, y).score(Xt, y))
-
+print(Xt)
 # for proposal in [True, False]:
 #     X = data.data
 #     y = data.target
