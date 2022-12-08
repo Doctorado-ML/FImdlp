@@ -1,46 +1,63 @@
 #include "Metrics.h"
 #include <set>
+#include <iostream>
+using namespace std;
 namespace mdlp {
-    Metrics::Metrics()
-        = default;
-    int Metrics::numClasses(labels& y, indices_t indices, size_t start, size_t end)
+    Metrics::Metrics(labels& y_, indices_t& indices_): y(y_), indices(indices_), numClasses(computeNumClasses(0, indices.size())), entropyCache(cacheEnt_t()), igCache(cacheIg_t())
     {
-        std::set<int> numClasses;
-        for (auto i = start; i < end; ++i) {
-            numClasses.insert(y[indices[i]]);
-        }
-        return numClasses.size();
     }
-    float Metrics::entropy(labels& y, indices_t& indices, size_t start, size_t end, int nClasses)
+    int Metrics::computeNumClasses(size_t start, size_t end)
     {
-        float entropy = 0;
+        set<int> nClasses;
+        for (auto i = start; i < end; ++i) {
+            nClasses.insert(y[indices[i]]);
+        }
+        return nClasses.size();
+    }
+    void Metrics::setData(labels& y_, indices_t& indices_)
+    {
+        indices = indices_;
+        y = y_;
+        numClasses = computeNumClasses(0, indices.size());
+    }
+    precision_t Metrics::entropy(size_t start, size_t end)
+    {
+        precision_t p, ventropy = 0;
         int nElements = 0;
-        labels counts(nClasses + 1, 0);
+        labels counts(numClasses + 1, 0);
+        if (end - start < 2)
+            return 0;
+        if (entropyCache.find(make_tuple(start, end)) != entropyCache.end()) {
+            return entropyCache[make_tuple(start, end)];
+        }
         for (auto i = &indices[start]; i != &indices[end]; ++i) {
             counts[y[*i]]++;
             nElements++;
         }
         for (auto count : counts) {
             if (count > 0) {
-                float p = (float)count / nElements;
-                entropy -= p * log2(p);
+                p = (precision_t)count / nElements;
+                ventropy -= p * log2(p);
             }
         }
-        return entropy < 0 ? 0 : entropy;
+        entropyCache[make_tuple(start, end)] = ventropy;
+        return ventropy;
     }
-    float Metrics::informationGain(labels& y, indices_t& indices, size_t start, size_t end, size_t cutPoint, int nClasses)
+    precision_t Metrics::informationGain(size_t start, size_t cut, size_t end)
     {
-        float iGain;
-        float entropy, entropyLeft, entropyRight;
-        int nClassesLeft, nClassesRight;
-        int nElementsLeft = cutPoint - start, nElementsRight = end - cutPoint;
+        precision_t iGain;
+        precision_t entropyInterval, entropyLeft, entropyRight;
+        int nElementsLeft = cut - start, nElementsRight = end - cut;
         int nElements = end - start;
-        nClassesLeft = Metrics::numClasses(y, indices, start, cutPoint);
-        nClassesRight = Metrics::numClasses(y, indices, cutPoint, end);
-        entropy = Metrics::entropy(y, indices, start, end, nClasses);
-        entropyLeft = Metrics::entropy(y, indices, start, cutPoint, nClassesLeft);
-        entropyRight = Metrics::entropy(y, indices, cutPoint, end, nClassesRight);
-        iGain = entropy - ((float)nElementsLeft * entropyLeft + (float)nElementsRight * entropyRight) / nElements;
+        if (igCache.find(make_tuple(start, cut, end)) != igCache.end()) {
+            cout << "**********Cache IG hit for " << start << " " << end << endl;
+            return igCache[make_tuple(start, cut, end)];
+        }
+        entropyInterval = entropy(start, end);
+        entropyLeft = entropy(start, cut);
+        entropyRight = entropy(cut, end);
+        iGain = entropyInterval - ((precision_t)nElementsLeft * entropyLeft + (precision_t)nElementsRight * entropyRight) / nElements;
+        igCache[make_tuple(start, cut, end)] = iGain;
         return iGain;
     }
 

@@ -34,7 +34,7 @@ namespace mdlp {
             X = X_;
             indices = indices_;
             indices_t testSortedIndices = sortIndices(X);
-            float prev = X[testSortedIndices[0]];
+            precision_t prev = X[testSortedIndices[0]];
             for (auto i = 0; i < X.size(); ++i) {
                 EXPECT_EQ(testSortedIndices[i], indices[i]);
                 EXPECT_LE(prev, X[testSortedIndices[i]]);
@@ -162,7 +162,7 @@ namespace mdlp {
         fit(X, y);
         computeCutPointsOriginal();
         cutPoints_t expected;
-        vector<float> computed = getCutPoints();
+        vector<precision_t> computed = getCutPoints();
         expected = {
             { 0, 4, -1, -3.4028234663852886e+38, 5.15 }, { 4, 6, -1, 5.15, 5.45 },
             { 6, 10, -1, 5.45, 3.4028234663852886e+38 }

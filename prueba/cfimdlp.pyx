@@ -5,7 +5,7 @@ from libcpp.vector cimport vector
 cdef extern from "FImdlp.h" namespace "FImdlp":
     cdef cppclass FImdlp:
         FImdlp() except + 
-        vector[float] cutPoints(vector[int]&, vector[int]&)
+        vector[precision_t] cutPoints(vector[int]&, vector[int]&)
 
 cdef class CFImdlp:
     cdef FImdlp *thisptr

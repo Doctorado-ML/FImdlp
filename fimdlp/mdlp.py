@@ -1,6 +1,5 @@
 import numpy as np
 from .cppfimdlp import CFImdlp
-from .pyfimdlp import PyFImdlp
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted

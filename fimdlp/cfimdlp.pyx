@@ -3,16 +3,13 @@
 from libcpp.vector cimport vector
 from libcpp cimport bool
 
-cdef extern from "ccFImdlp.h" namespace "mdlp":
-    cdef struct CutPointBody:
-        size_t start, end;
-        int classNumber;
-        float fromValue, toValue;
+cdef extern from "CPPFImdlp.h" namespace "mdlp":
+    ctypedef float precision_t
     cdef cppclass CPPFImdlp:
         CPPFImdlp() except + 
-        CPPFImdlp(bool, int, bool) except + 
-        CPPFImdlp& fitx(vector[float]&, vector[int]&)
-        vector[float] getCutPointsx()
+        CPPFImdlp(bool, bool) except + 
+        CPPFImdlp& fit(vector[precision_t]&, vector[int]&)
+        vector[precision_t] getCutPoints()
         
 
 class PcutPoint_t:
@@ -24,14 +21,14 @@ class PcutPoint_t:
 
 cdef class CFImdlp:
     cdef CPPFImdlp *thisptr
-    def __cinit__(self, precision=6, debug=False, proposal=True):
+    def __cinit__(self, debug=False, proposal=True):
         # Proposal or original algorithm
-        self.thisptr = new CPPFImdlp(proposal, precision, debug)
+        self.thisptr = new CPPFImdlp(proposal, debug)
     def __dealloc__(self):
         del self.thisptr
     def fit(self, X, y):
-        self.thisptr.fitx(X, y)
+        self.thisptr.fit(X, y)
         return self
     def get_cut_points(self):
-        return self.thisptr.getCutPointsx()
+        return self.thisptr.getCutPoints()
  

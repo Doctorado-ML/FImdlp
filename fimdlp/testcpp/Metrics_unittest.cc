@@ -2,7 +2,7 @@
 #include "../Metrics.h"
 
 namespace mdlp {
-    float precision = 0.000001;
+    precision_t precision = 0.000001;
     TEST(MetricTest, NumClasses)
     {
         labels y = { 1, 1, 1, 1, 1, 1, 1, 1, 2, 1 };
