@@ -19,6 +19,7 @@ namespace mdlp {
     {
         X = X_;
         y = y_;
+        cutPoints.clear();
         if (X.size() != y.size()) {
             throw invalid_argument("X and y must have the same size");
         }

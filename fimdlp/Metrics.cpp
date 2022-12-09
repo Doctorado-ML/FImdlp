@@ -1,6 +1,5 @@
 #include "Metrics.h"
 #include <set>
-#include <iostream>
 using namespace std;
 namespace mdlp {
     Metrics::Metrics(labels& y_, indices_t& indices_): y(y_), indices(indices_), numClasses(computeNumClasses(0, indices.size())), entropyCache(cacheEnt_t()), igCache(cacheIg_t())
@@ -19,6 +18,8 @@ namespace mdlp {
         indices = indices_;
         y = y_;
         numClasses = computeNumClasses(0, indices.size());
+        entropyCache.clear();
+        igCache.clear();
     }
     precision_t Metrics::entropy(size_t start, size_t end)
     {
@@ -50,7 +51,6 @@ namespace mdlp {
         int nElementsLeft = cut - start, nElementsRight = end - cut;
         int nElements = end - start;
         if (igCache.find(make_tuple(start, cut, end)) != igCache.end()) {
-            cout << "**********Cache IG hit for " << start << " " << end << endl;
             return igCache[make_tuple(start, cut, end)];
         }
         entropyInterval = entropy(start, end);
@@ -62,13 +62,3 @@ namespace mdlp {
     }
 
 }
-/*
-  cache_t entropyCache;
-  std::map<std::tuple<int, int>, double> c;
-
-  // Set the value at index (3, 5) to 7.8.
-  c[std::make_tuple(3, 5)] = 7.8;
-
-  // Print the value at index (3, 5).
-  std::cout << c[std::make_tuple(3, 5)] << std::endl;
-*/
