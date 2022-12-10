@@ -3,33 +3,35 @@ from .cppfimdlp import CFImdlp
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from joblib import Parallel, delayed
 
 
 class FImdlp(TransformerMixin, BaseEstimator):
-    def __init__(self, proposal=True):
-        self.proposal = proposal  # proposed algorithm or original algorithm
+    def __init__(self, n_jobs=-1, proposal=False):
+        self.n_jobs = n_jobs
+        self.proposal = proposal
 
-    """Fayyad - Irani MDLP discretization algorithm.
+    """Fayyad - Irani MDLP discretization algorithm based implementation.
 
     Parameters
     ----------
-    demo_param : str, default='demo'
-        A parameter used for demonstation of how to pass and store paramters.
+    n_jobs : int, default=-1
+        The number of jobs to run in parallel. :meth:`fit` and 
+        :meth:`transform`, are parallelized over the features. ``-1`` means 
+        using all cores available.
 
     Attributes
     ----------
     n_features_ : int
         The number of features of the data passed to :meth:`fit`.
     discretizer_ : list
-        The list of discretizers for each feature.
+        The list of discretizers, one for each feature.
     cut_points_ : list
         The list of cut points for each feature.
     X_ : array 
         the samples used to fit, shape (n_samples, n_features)
     y_ : array 
         the labels used to fit, shape (n_samples,)
-    discretized_X_ : 
-        array of the discretized samples passed to fit(n_samples, n_features)
     features_ : list
         the list of features to be discretized
     """
@@ -70,6 +72,8 @@ class FImdlp(TransformerMixin, BaseEstimator):
         y : None
             There is no need of a target in a transformer, yet the pipeline API
             requires this parameter.
+        features : list, default=[i for i in range(n_features)]
+            The list of features to be discretized.
         Returns
         -------
         self : object
@@ -83,36 +87,22 @@ class FImdlp(TransformerMixin, BaseEstimator):
         self.y_ = y
         self.discretizer_ = [None] * self.n_features_
         self.cut_points_ = [None] * self.n_features_
-        # Can do it in parallel
-        for feature in self.features_:
-            self.discretizer_[feature] = CFImdlp(
-                proposal=self.proposal, debug=False
-            )
-            self.discretizer_[feature].fit(X[:, feature], y)
-            self.cut_points_[feature] = self.discretizer_[
-                feature
-            ].get_cut_points()
+        Parallel(n_jobs=self.n_jobs, prefer="threads")(
+            delayed(self._fit_discretizer)(feature)
+            for feature in range(self.n_features_)
+        )
         return self
 
-    def get_fitted(self):
-        """Return the discretized X computed during fit.
+    def _fit_discretizer(self, feature):
+        self.discretizer_[feature] = CFImdlp(proposal=self.proposal)
+        self.discretizer_[feature].fit(self.X_[:, feature], self.y_)
+        self.cut_points_[feature] = self.discretizer_[feature].get_cut_points()
 
-        Returns
-        -------
-        X_transformed : array, shape (n_samples, n_features)
-            discretized X computed during fit.
-        """
-        # Check is fit had been called
-        check_is_fitted(self, "n_features_")
-        result = np.zeros_like(self.X_, dtype=np.int32) - 1
-        for feature in range(self.n_features_):
-            if feature in self.features_:
-                result[:, feature] = self.discretizer_[
-                    feature
-                ].get_discretized_values()
-            else:
-                result[:, feature] = self.X_[:, feature]
-        return result
+    def _discretize_feature(self, feature, X, result):
+        if feature in self.features_:
+            result[:, feature] = np.searchsorted(self.cut_points_[feature], X)
+        else:
+            result[:, feature] = X
 
     def transform(self, X):
         """Discretize X values.
@@ -127,28 +117,28 @@ class FImdlp(TransformerMixin, BaseEstimator):
         """
         # Check is fit had been called
         check_is_fitted(self, "n_features_")
-
         # Input validation
         X = check_array(X)
-
         # Check that the input is of the same shape as the one passed
         # during fit.
-        # if X.shape[1] != self.n_features_:
-        #     raise ValueError(
-        #         "Shape of input is different from what was seen in `fit`"
-        #     )
+        if X.shape[1] != self.n_features_:
+            raise ValueError(
+                "Shape of input is different from what was seen in `fit`"
+            )
         result = np.zeros_like(X, dtype=np.int32) - 1
-        # Can do it in parallel
-        for feature in range(self.n_features_):
-            if feature in self.features_:
-                result[:, feature] = np.searchsorted(
-                    self.cut_points_[feature], X[:, feature]
-                )
-            else:
-                result[:, feature] = X[:, feature]
+        Parallel(n_jobs=self.n_jobs, prefer="threads")(
+            delayed(self._discretize_feature)(feature, X[:, feature], result)
+            for feature in range(self.n_features_)
+        )
         return result
 
     def get_cut_points(self):
+        """Get the cut points for each feature.
+        Returns
+        -------
+        result: list
+            The list of cut points for each feature.
+        """
         result = []
         for feature in range(self.n_features_):
             result.append(self.cut_points_[feature])

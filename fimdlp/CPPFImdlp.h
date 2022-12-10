@@ -6,15 +6,14 @@
 namespace mdlp {
     class CPPFImdlp {
     protected:
-        bool proposal; // proposed algorithm or original algorithm
-        bool debug;
+        bool proposal;
         indices_t indices; // sorted indices to use with X and y
-        samples X;
-        labels y;
+        samples_t X;
+        labels_t y;
         Metrics metrics;
         cutPoints_t cutPoints;
 
-        static indices_t sortIndices(samples&);
+        static indices_t sortIndices(samples_t&);
         void computeCutPoints(size_t, size_t);
         long int getCandidate(size_t, size_t);
         bool mdlp(size_t, size_t, size_t);
@@ -25,11 +24,10 @@ namespace mdlp {
         void computeCutPointsProposal();
 
     public:
-        CPPFImdlp();
-        CPPFImdlp(bool, bool debug = false);
+        CPPFImdlp(bool);
         ~CPPFImdlp();
-        CPPFImdlp& fit(samples&, labels&);
-        samples getCutPoints();
+        CPPFImdlp& fit(samples_t&, labels_t&);
+        samples_t getCutPoints();
     };
 }
 #endif

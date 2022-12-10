@@ -23,6 +23,6 @@ public:
     vector<vector<float>>& getX();
     vector<int>& getY();
     vector<tuple<string, string>> getAttributes();
-    vector<int> factorize(const vector<string>& labels);
+    vector<int> factorize(const vector<string>& labels_t);
 };
 #endif

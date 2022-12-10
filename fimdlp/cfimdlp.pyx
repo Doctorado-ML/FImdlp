@@ -6,24 +6,15 @@ from libcpp cimport bool
 cdef extern from "CPPFImdlp.h" namespace "mdlp":
     ctypedef float precision_t
     cdef cppclass CPPFImdlp:
-        CPPFImdlp() except + 
-        CPPFImdlp(bool, bool) except + 
+        CPPFImdlp(bool) except + 
         CPPFImdlp& fit(vector[precision_t]&, vector[int]&)
         vector[precision_t] getCutPoints()
         
 
-class PcutPoint_t:
-    def __init__(self, start, end, fromValue, toValue):
-        self.start = start
-        self.end = end
-        self.fromValue = fromValue
-        self.toValue = toValue
-
 cdef class CFImdlp:
     cdef CPPFImdlp *thisptr
-    def __cinit__(self, debug=False, proposal=True):
-        # Proposal or original algorithm
-        self.thisptr = new CPPFImdlp(proposal, debug)
+    def __cinit__(self, proposal):
+        self.thisptr = new CPPFImdlp(proposal)
     def __dealloc__(self):
         del self.thisptr
     def fit(self, X, y):

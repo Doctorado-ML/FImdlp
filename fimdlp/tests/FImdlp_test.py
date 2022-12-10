@@ -8,12 +8,14 @@ from ..mdlp import FImdlp
 class FImdlpTest(unittest.TestCase):
     def test_init(self):
         clf = FImdlp()
-        self.assertTrue(clf.proposal)
-        clf = FImdlp(proposal=False)
+        self.assertEqual(-1, clf.n_jobs)
         self.assertFalse(clf.proposal)
+        clf = FImdlp(proposal=True, n_jobs=7)
+        self.assertTrue(clf.proposal)
+        self.assertEqual(7, clf.n_jobs)
 
-    def test_fit(self):
-        clf = FImdlp()
+    def test_fit_proposal(self):
+        clf = FImdlp(proposal=True)
         clf.fit([[1, 2], [3, 4]], [1, 2])
         self.assertEqual(clf.n_features_, 2)
         self.assertListEqual(clf.X_.tolist(), [[1, 2], [3, 4]])
@@ -25,10 +27,39 @@ class FImdlpTest(unittest.TestCase):
         self.assertTrue(np.array_equal(X, clf.X_))
         self.assertTrue(np.array_equal(y, clf.y_))
         expected = [
-            [4.900000095367432, 5.0, 5.099999904632568, 5.400000095367432],
-            [2.6999998092651367, 2.9000000953674316],
-            [2.3499999046325684, 4.5],
-            [0.75, 1.399999976158142, 1.5],
+            [
+                4.900000095367432,
+                5.0,
+                5.099999904632568,
+                5.400000095367432,
+                5.699999809265137,
+            ],
+            [2.6999998092651367, 2.9000000953674316, 3.1999998092651367],
+            [2.3499999046325684, 4.5, 4.800000190734863],
+            [0.75, 1.399999976158142, 1.5, 1.7000000476837158],
+        ]
+        self.assertListEqual(expected, clf.get_cut_points())
+        self.assertListEqual([0, 1, 2, 3], clf.features_)
+        clf.fit(X, y, features=[0, 2, 3])
+        self.assertListEqual([0, 2, 3], clf.features_)
+
+    def test_fit_original(self):
+        clf = FImdlp(proposal=False)
+        clf.fit([[1, 2], [3, 4]], [1, 2])
+        self.assertEqual(clf.n_features_, 2)
+        self.assertListEqual(clf.X_.tolist(), [[1, 2], [3, 4]])
+        self.assertListEqual(clf.y_.tolist(), [1, 2])
+        self.assertListEqual([[], []], clf.get_cut_points())
+        X, y = load_iris(return_X_y=True)
+        clf.fit(X, y)
+        self.assertEqual(clf.n_features_, 4)
+        self.assertTrue(np.array_equal(X, clf.X_))
+        self.assertTrue(np.array_equal(y, clf.y_))
+        expected = [
+            [5.5, 5.800000190734863],
+            [3.0999999046325684],
+            [2.450000047683716, 4.800000190734863, 5.099999904632568],
+            [0.800000011920929, 1.7000000476837158],
         ]
         self.assertListEqual(expected, clf.get_cut_points())
         self.assertListEqual([0, 1, 2, 3], clf.features_)
@@ -44,8 +75,38 @@ class FImdlpTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             clf.fit([[1, 2], [3, 4]], [1, 2], unexpected="class_name")
 
-    def test_transform(self):
-        clf = FImdlp()
+    def test_transform_original(self):
+        clf = FImdlp(proposal=False)
+        clf.fit([[1, 2], [3, 4]], [1, 2])
+        self.assertEqual(
+            clf.transform([[1, 2], [3, 4]]).tolist(), [[0, 0], [0, 0]]
+        )
+        X, y = load_iris(return_X_y=True)
+        clf.fit(X, y)
+        self.assertEqual(clf.n_features_, 4)
+        self.assertTrue(np.array_equal(X, clf.X_))
+        self.assertTrue(np.array_equal(y, clf.y_))
+        self.assertListEqual(
+            clf.transform(X).tolist(), clf.fit(X, y).transform(X).tolist()
+        )
+        expected = [
+            [0, 0, 1, 1],
+            [2, 0, 1, 1],
+            [1, 0, 1, 1],
+            [0, 0, 1, 1],
+            [1, 0, 1, 1],
+            [1, 0, 1, 1],
+            [1, 0, 1, 1],
+        ]
+        self.assertTrue(np.array_equal(clf.transform(X[90:97]), expected))
+        with self.assertRaises(ValueError):
+            clf.transform([[1, 2, 3], [4, 5, 6]])
+        with self.assertRaises(sklearn.exceptions.NotFittedError):
+            clf = FImdlp(proposal=False)
+            clf.transform([[1, 2], [3, 4]])
+
+    def test_transform_proposal(self):
+        clf = FImdlp(proposal=True)
         clf.fit([[1, 2], [3, 4]], [1, 2])
         self.assertEqual(
             clf.transform([[1, 2], [3, 4]]).tolist(), [[0, 0], [0, 0]]
@@ -60,16 +121,16 @@ class FImdlpTest(unittest.TestCase):
         )
         expected = [
             [4, 0, 1, 1],
-            [4, 2, 2, 2],
-            [4, 0, 1, 1],
+            [5, 2, 2, 2],
+            [5, 0, 1, 1],
             [1, 0, 1, 1],
             [4, 1, 1, 1],
-            [4, 2, 1, 1],
-            [4, 1, 1, 1],
+            [5, 2, 1, 1],
+            [5, 1, 1, 1],
         ]
         self.assertTrue(np.array_equal(clf.transform(X[90:97]), expected))
         with self.assertRaises(ValueError):
             clf.transform([[1, 2, 3], [4, 5, 6]])
         with self.assertRaises(sklearn.exceptions.NotFittedError):
-            clf = FImdlp()
+            clf = FImdlp(proposal=True)
             clf.transform([[1, 2], [3, 4]])

@@ -1,21 +1,17 @@
 #include <numeric>
-#include <iostream>
 #include <algorithm>
 #include <set>
 #include "CPPFImdlp.h"
 #include "Metrics.h"
 
 namespace mdlp {
-    CPPFImdlp::CPPFImdlp(): proposal(true), debug(false), indices(indices_t()), y(labels()), metrics(Metrics(y, indices))
-    {
-    }
-    CPPFImdlp::CPPFImdlp(bool proposal, bool debug): proposal(proposal), debug(debug), indices(indices_t()), y(labels()), metrics(Metrics(y, indices))
+    CPPFImdlp::CPPFImdlp(bool proposal):proposal(proposal), indices(indices_t()), y(labels_t()), metrics(Metrics(y, indices))
     {
     }
     CPPFImdlp::~CPPFImdlp()
         = default;
 
-    CPPFImdlp& CPPFImdlp::fit(samples& X_, labels& y_)
+    CPPFImdlp& CPPFImdlp::fit(samples_t& X_, labels_t& y_)
     {
         X = X_;
         y = y_;
@@ -28,8 +24,10 @@ namespace mdlp {
         }
         indices = sortIndices(X_);
         metrics.setData(y, indices);
-        //computeCutPoints(0, X.size());
-        computeCutPointsProposal();
+        if (proposal)
+            computeCutPointsProposal();
+        else
+            computeCutPoints(0, X.size());
         return *this;
     }
     void CPPFImdlp::computeCutPoints(size_t start, size_t end)
@@ -53,7 +51,6 @@ namespace mdlp {
     }
     void CPPFImdlp::computeCutPointsOriginal(size_t start, size_t end)
     {
-        size_t idx;
         precision_t cut;
         if (end - start < 2)
             return;
@@ -76,14 +73,9 @@ namespace mdlp {
         yCur = yPrev = y[indices[0]];
         numElements = indices.size() - 1;
         idx = start = 0;
-        bool firstCutPoint = true;
-        if (debug)
-            printf("*idx=%lu -> (-1, -1) Prev(%3.1f, %d) Elementos: %lu\n", idx, xCur, yCur, numElements);
         while (idx < numElements) {
             xPivot = xCur;
             yPivot = yCur;
-            if (debug)
-                printf("<idx=%lu -> Prev(%3.1f, %d) Pivot(%3.1f, %d) Cur(%3.1f, %d) \n", idx, xPrev, yPrev, xPivot, yPivot, xCur, yCur);
             // Read the same values and check class changes
             do {
                 idx++;
@@ -92,17 +84,12 @@ namespace mdlp {
                 if (yCur != yPivot && xCur == xPivot) {
                     yPivot = -1;
                 }
-                if (debug)
-                    printf(">idx=%lu -> Prev(%3.1f, %d) Pivot(%3.1f, %d) Cur(%3.1f, %d) \n", idx, xPrev, yPrev, xPivot, yPivot, xCur, yCur);
             }
             while (idx < numElements && xCur == xPivot);
             // Check if the class changed and there are more than 1 element
             if ((idx - start > 1) && (yPivot == -1 || yPrev != yCur) && mdlp(start, idx, indices.size())) {
                 start = idx;
                 cutPoint = (xPrev + xCur) / 2;
-                if (debug) {
-                    printf("Cutpoint idx=%lu Cur(%3.1f, %d) Prev(%3.1f, %d) Pivot(%3.1f, %d) = %3.1g \n", idx, xCur, yCur, xPrev, yPrev, xPivot, yPivot, cutPoint);
-                }
                 cutPoints.push_back(cutPoint);
             }
             yPrev = yPivot;
@@ -160,7 +147,7 @@ namespace mdlp {
         return output;
     }
     // Argsort from https://stackoverflow.com/questions/1577475/c-sorting-and-keeping-track-of-indexes
-    indices_t CPPFImdlp::sortIndices(samples& X_)
+    indices_t CPPFImdlp::sortIndices(samples_t& X_)
     {
         indices_t idx(X_.size());
         iota(idx.begin(), idx.end(), 0);

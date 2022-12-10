@@ -1,8 +1,9 @@
 #include "Metrics.h"
 #include <set>
+#include <cmath>
 using namespace std;
 namespace mdlp {
-    Metrics::Metrics(labels& y_, indices_t& indices_): y(y_), indices(indices_), numClasses(computeNumClasses(0, indices.size())), entropyCache(cacheEnt_t()), igCache(cacheIg_t())
+    Metrics::Metrics(labels_t& y_, indices_t& indices_): y(y_), indices(indices_), numClasses(computeNumClasses(0, indices.size())), entropyCache(cacheEnt_t()), igCache(cacheIg_t())
     {
     }
     int Metrics::computeNumClasses(size_t start, size_t end)
@@ -13,7 +14,7 @@ namespace mdlp {
         }
         return nClasses.size();
     }
-    void Metrics::setData(labels& y_, indices_t& indices_)
+    void Metrics::setData(labels_t& y_, indices_t& indices_)
     {
         indices = indices_;
         y = y_;
@@ -25,7 +26,7 @@ namespace mdlp {
     {
         precision_t p, ventropy = 0;
         int nElements = 0;
-        labels counts(numClasses + 1, 0);
+        labels_t counts(numClasses + 1, 0);
         if (end - start < 2)
             return 0;
         if (entropyCache.find(make_tuple(start, end)) != entropyCache.end()) {

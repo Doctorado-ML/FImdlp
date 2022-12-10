@@ -6,5 +6,7 @@ Fayyad - Irani MDLP discretization algorithm
 
 ```bash
 python setup.py build_ext --inplace
-python sample.py
+python samples/sample.py iris --original 
+python samples/sample.py iris --proposal
+python samples/sample.py -h # for more options
 ```

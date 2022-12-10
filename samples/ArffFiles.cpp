@@ -101,13 +101,13 @@ string ArffFiles::trim(const string& source)
     s.erase(s.find_last_not_of(" \n\r\t") + 1);
     return s;
 }
-vector<int> ArffFiles::factorize(const vector<string>& labels)
+vector<int> ArffFiles::factorize(const vector<string>& labels_t)
 {
     vector<int> yy;
-    yy.reserve(labels.size());
+    yy.reserve(labels_t.size());
     map<string, int> labelMap;
     int i = 0;
-    for (string label : labels) {
+    for (string label : labels_t) {
         if (labelMap.find(label) == labelMap.end()) {
             labelMap[label] = i++;
         }
