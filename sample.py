@@ -35,4 +35,3 @@ print(test.get_cut_points())
 
 clf = RandomForestClassifier(random_state=0)
 print(clf.fit(Xt, y).score(Xt, y))
-print(Xt)
