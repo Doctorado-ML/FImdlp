@@ -11,10 +11,10 @@ private:
     string className, classType;
     vector<vector<float>> X;
     vector<int> y;
-    void generateDataset();
+    void generateDataset(bool);
 public:
     ArffFiles();
-    void load(string);
+    void load(string, bool = true);
     vector<string> getLines();
     unsigned long int getSize();
     string getClassName();

@@ -3,4 +3,4 @@ project(main)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(main main.cpp ArffFiles.cpp)
+add_executable(main main.cpp ArffFiles.cpp ../../Metrics.cpp ../../CPPFImdlp.cpp)

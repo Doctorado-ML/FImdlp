@@ -28,7 +28,8 @@ namespace mdlp {
         }
         indices = sortIndices(X_);
         metrics.setData(y, indices);
-        computeCutPoints(0, X.size());
+        //computeCutPoints(0, X.size());
+        computeCutPointsProposal();
         return *this;
     }
     void CPPFImdlp::computeCutPoints(size_t start, size_t end)
@@ -49,6 +50,64 @@ namespace mdlp {
         }
         computeCutPoints(start, cut);
         computeCutPoints(cut, end);
+    }
+    void CPPFImdlp::computeCutPointsOriginal(size_t start, size_t end)
+    {
+        size_t idx;
+        precision_t cut;
+        if (end - start < 2)
+            return;
+        cut = getCandidate(start, end);
+        if (cut == -1)
+            return;
+        if (mdlp(start, cut, end)) {
+            cutPoints.push_back((X[indices[cut]] + X[indices[cut - 1]]) / 2);
+        }
+        computeCutPointsOriginal(start, cut);
+        computeCutPointsOriginal(cut, end);
+    }
+    void CPPFImdlp::computeCutPointsProposal()
+    {
+        precision_t xPrev, xCur, xPivot, cutPoint;
+        int yPrev, yCur, yPivot;
+        size_t idx, numElements, start;
+
+        xCur = xPrev = X[indices[0]];
+        yCur = yPrev = y[indices[0]];
+        numElements = indices.size() - 1;
+        idx = start = 0;
+        bool firstCutPoint = true;
+        if (debug)
+            printf("*idx=%lu -> (-1, -1) Prev(%3.1f, %d) Elementos: %lu\n", idx, xCur, yCur, numElements);
+        while (idx < numElements) {
+            xPivot = xCur;
+            yPivot = yCur;
+            if (debug)
+                printf("<idx=%lu -> Prev(%3.1f, %d) Pivot(%3.1f, %d) Cur(%3.1f, %d) \n", idx, xPrev, yPrev, xPivot, yPivot, xCur, yCur);
+            // Read the same values and check class changes
+            do {
+                idx++;
+                xCur = X[indices[idx]];
+                yCur = y[indices[idx]];
+                if (yCur != yPivot && xCur == xPivot) {
+                    yPivot = -1;
+                }
+                if (debug)
+                    printf(">idx=%lu -> Prev(%3.1f, %d) Pivot(%3.1f, %d) Cur(%3.1f, %d) \n", idx, xPrev, yPrev, xPivot, yPivot, xCur, yCur);
+            }
+            while (idx < numElements && xCur == xPivot);
+            // Check if the class changed and there are more than 1 element
+            if ((idx - start > 1) && (yPivot == -1 || yPrev != yCur) && mdlp(start, idx, indices.size())) {
+                start = idx;
+                cutPoint = (xPrev + xCur) / 2;
+                if (debug) {
+                    printf("Cutpoint idx=%lu Cur(%3.1f, %d) Prev(%3.1f, %d) Pivot(%3.1f, %d) = %3.1g \n", idx, xCur, yCur, xPrev, yPrev, xPivot, yPivot, cutPoint);
+                }
+                cutPoints.push_back(cutPoint);
+            }
+            yPrev = yPivot;
+            xPrev = xPivot;
+        }
     }
     long int CPPFImdlp::getCandidate(size_t start, size_t end)
     {

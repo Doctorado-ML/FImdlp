@@ -1,19 +1,18 @@
-from sklearn.datasets import load_iris
 from fimdlp.mdlp import FImdlp
 from fimdlp.cppfimdlp import CFImdlp
 from sklearn.ensemble import RandomForestClassifier
-import numpy as np
 import time
 
 from scipy.io import arff
 import pandas as pd
 
+path = "fimdlp/testcpp/datasets/"
 # class_name = "speaker"
 # file_name = "kdd_JapaneseVowels.arff"
 class_name = "class"
 # file_name = "mfeat-factors.arff"
 file_name = "letter.arff"
-data = arff.loadarff(file_name)
+data = arff.loadarff(path + file_name)
 df = pd.DataFrame(data[0])
 df.dropna(axis=0, how="any", inplace=True)
 dataset = df
@@ -22,12 +21,6 @@ features = X.columns
 class_name = class_name
 y, _ = pd.factorize(df[class_name])
 X = X.to_numpy()
-
-# data = load_iris()
-# X = data.data
-# y = data.target
-# features = data.feature_names
-
 
 test = FImdlp()
 now = time.time()

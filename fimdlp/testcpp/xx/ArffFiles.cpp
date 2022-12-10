@@ -38,7 +38,7 @@ vector<int>& ArffFiles::getY()
 {
     return y;
 }
-void ArffFiles::load(string fileName)
+void ArffFiles::load(string fileName, bool classLast)
 {
     ifstream file(fileName);
     string keyword, attribute, type;
@@ -62,28 +62,34 @@ void ArffFiles::load(string fileName)
         file.close();
         if (attributes.empty())
             throw invalid_argument("No attributes found");
-        className = get<0>(attributes.back());
-        classType = get<1>(attributes.back());
-        attributes.pop_back();
-        generateDataset();
+        if (classLast) {
+            className = get<0>(attributes.back());
+            classType = get<1>(attributes.back());
+            attributes.pop_back();
+        } else {
+            className = get<0>(attributes.front());
+            classType = get<1>(attributes.front());
+            attributes.erase(attributes.begin());
+        }
+        generateDataset(classLast);
     } else
         throw invalid_argument("Unable to open file");
 }
-void ArffFiles::generateDataset()
+void ArffFiles::generateDataset(bool classLast)
 {
-    X = vector<vector<float>>(lines.size(), vector<float>(attributes.size()));
+    X = vector<vector<float>>(attributes.size(), vector<float>(lines.size()));
     vector<string> yy = vector<string>(lines.size(), "");
+    int labelIndex = classLast ? attributes.size() : 0;
     for (int i = 0; i < lines.size(); i++) {
         stringstream ss(lines[i]);
         string value;
-        int j = 0;
+        int pos = 0, xIndex = 0;
         while (getline(ss, value, ',')) {
-            if (j == attributes.size()) {
+            if (pos++ == labelIndex) {
                 yy[i] = value;
-                break;
+            } else {
+                X[xIndex++][i] = stof(value);
             }
-            X[i][j] = stof(value);
-            j++;
         }
     }
     y = factorize(yy);

@@ -19,6 +19,11 @@ namespace mdlp {
         long int getCandidate(size_t, size_t);
         bool mdlp(size_t, size_t, size_t);
 
+        // Original algorithm
+        void computeCutPointsOriginal(size_t, size_t);
+        bool goodCut(size_t, size_t, size_t);
+        void computeCutPointsProposal();
+
     public:
         CPPFImdlp();
         CPPFImdlp(bool, bool debug = false);

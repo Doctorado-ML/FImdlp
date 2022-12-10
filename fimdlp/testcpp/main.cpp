@@ -22,9 +22,6 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    //file.load("datasets/mfeat-factors.arff", true);
-    //file.load("/Users/rmontanana/Code/FImdlp/fimdlp/testcpp/datasets/kdd_JapaneseVowels.arff", false);
-    //file.load("/Users/rmontanana/Code/FImdlp/fimdlp/testcpp/datasets/iris.arff", true);
     file.load(path + argv[1] + ".arff", datasets[argv[1]]);
     auto attributes = file.getAttributes();
     int items = file.getSize();
