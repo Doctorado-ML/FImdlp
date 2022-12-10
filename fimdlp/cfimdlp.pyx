@@ -3,7 +3,7 @@
 from libcpp.vector cimport vector
 from libcpp cimport bool
 
-cdef extern from "CPPFImdlp.h" namespace "mdlp":
+cdef extern from "cppmdlp/CPPFImdlp.h" namespace "mdlp":
     ctypedef float precision_t
     cdef cppclass CPPFImdlp:
         CPPFImdlp(bool) except + 
