@@ -17,7 +17,7 @@ authors = [
     { name = "Ricardo Montañana", email = "ricardo.montanana@alu.uclm.es" },
 ]
 dynamic = ['version']
-dependencies = ["numpy"]
+dependencies = ["numpy", "joblib"]
 requires-python = ">=3.8"
 classifiers = [
     "Development Status :: 3 - Alpha",
