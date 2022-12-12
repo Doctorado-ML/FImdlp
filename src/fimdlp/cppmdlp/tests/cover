@@ -1,0 +1,4 @@
+rm -fr lcoverage/*
+lcov --capture --directory ./ --output-file lcoverage/main_coverage.info
+genhtml lcoverage/main_coverage.info --output-directory lcoverage
+open lcoverage/index.html

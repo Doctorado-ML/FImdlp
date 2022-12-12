@@ -25,7 +25,7 @@ push:  ## Push code with tags
 build:  ## Build package
 	rm -fr dist/*
 	rm -fr build/*
-	python -m build
+	python -m build --wheel
 
 buildext:  ## Build extension
 	rm -fr dist/*

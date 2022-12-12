@@ -1,0 +1,12 @@
+cmake -S . -B build -Wno-dev 
+if test $? -ne 0; then
+   echo "Error in creating build commands."
+   exit 1
+fi
+cmake --build build
+if test $? -ne 0; then
+   echo "Error in build command."
+   exit 1
+fi
+cd build
+ctest --output-on-failure
