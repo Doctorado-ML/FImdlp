@@ -1,0 +1,3 @@
+[submodule "src/cppmdlp"]
+	path = src/cppmdlp
+	url = https://github.com/rmontanana/mdlp.git
