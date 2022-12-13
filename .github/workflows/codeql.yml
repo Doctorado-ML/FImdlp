@@ -39,6 +39,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
@@ -61,6 +63,8 @@ jobs:
       - if: matrix.language == 'cpp'
         name: Build CPP
         run: |
+          pip install -q --upgrade pip
+          pip install -q scikit-learn cython
           make install
       # ℹ️ Command-line programs to run using the OS shell.
       # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
