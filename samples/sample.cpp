@@ -50,5 +50,9 @@ int main(int argc, char** argv)
             cout << item << endl;
         }
     }
+    mdlp::indices_t indices = test.sortIndices(X[0]);
+    for (auto item : indices) {
+        cout << setw(3) << item << " " << X[0][item] << " " << y[item] << endl;
+    }
     return 0;
 }

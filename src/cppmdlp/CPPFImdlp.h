@@ -13,7 +13,7 @@ namespace mdlp {
         Metrics metrics;
         cutPoints_t cutPoints;
 
-        static indices_t sortIndices(samples_t&);
+
         void computeCutPoints(size_t, size_t);
         long int getCandidate(size_t, size_t);
         bool mdlp(size_t, size_t, size_t);
@@ -28,6 +28,8 @@ namespace mdlp {
         ~CPPFImdlp();
         CPPFImdlp& fit(samples_t&, labels_t&);
         samples_t getCutPoints();
+        static indices_t sortIndices(samples_t&);
+
     };
 }
 #endif
