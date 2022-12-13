@@ -9,11 +9,11 @@ from setuptools import Extension, setup
 setup(
     ext_modules=[
         Extension(
-            name="cppfimdlp",
+            name="fimdlp.cppfimdlp",
             sources=[
-                "fimdlp/cfimdlp.pyx",
-                "fimdlp/CPPFImdlp.cpp",
-                "fimdlp/Metrics.cpp",
+                "src/fimdlp/cfimdlp.pyx",
+                "src/cppmdlp/CPPFImdlp.cpp",
+                "src/cppmdlp/Metrics.cpp",
             ],
             language="c++",
             include_dirs=["fimdlp"],

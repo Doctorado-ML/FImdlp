@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <iomanip>
-#include "../../CPPFImdlp.h"
+#include "../CPPFImdlp.h"
 
 using namespace std;
 
@@ -10,7 +10,7 @@ int main(int argc, char** argv)
 {
     ArffFiles file;
     vector<string> lines;
-    string path = "/Users/rmontanana/Code/FImdlp/fimdlp/testcpp/datasets/";
+    string path = "../../tests/datasets/";
     map<string, bool > datasets = {
         {"mfeat-factors", true},
         {"iris", true},
@@ -41,7 +41,7 @@ int main(int argc, char** argv)
         }
         cout << y[i] << endl;
     }
-    mdlp::CPPFImdlp test = mdlp::CPPFImdlp();
+    mdlp::CPPFImdlp test = mdlp::CPPFImdlp(false);
     for (auto i = 0; i < attributes.size(); i++) {
         cout << "Cut points for " << get<0>(attributes[i]) << endl;
         cout << "--------------------------" << setprecision(3) << endl;

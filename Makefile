@@ -1,44 +1,34 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
-.PHONY: coverage deps help lint push test doc build
+.PHONY: coverage deps help lint push test build install audit
 
 clean: ## Clean up
-	rm -rf build dist *.egg-info
-	if [ -f fimdlp/cfimdlp.cpp ]; then rm fimdlp/cfimdlp.cpp; fi;
-	if [ -f fimdlp/cppfimdlp.cpython-310-darwin.so ]; then rm fimdlp/cppfimdlp.cpython-310-darwin.so; fi;
-	if [ -d fimdlp/testcpp/build ]; then rm -fr fimdlp/testcpp/build/*  ; fi;
-	if [ -d fimdlp/testcpp/lcoverage ]; then rm -fr fimdlp/testcpp/lcoverage/*  ; fi;
+	rm -rf build dist src/*.egg-info
+	if [ -f src/fimdlp/cfimdlp.cpp ]; then rm src/fimdlp/cfimdlp.cpp; fi;
+	for file in src/fimdlp/*.so; do \
+		if [ -f $${file} ]; then rm $${file}; fi; \
+	done
 
 test:
-	coverage run -m unittest -v fimdlp.tests
-	cd fimdlp/testcpp && ./test
-
+	coverage run -m unittest discover -v -s src
 coverage:
-	if [ -d fimdlp/testcpp/build/CMakeFiles ]; then rm -fr fimdlp/testcpp/build/CMakeFiles/*  ; fi;
 	make test
-	cd fimdlp/testcpp && ./cover
 	coverage report -m
 
 lint:  ## Lint and static-check
-	black fimdlp
-	flake8 fimdlp
+	black src
+	flake8 --per-file-ignores="__init__.py:F401" src
 
 push:  ## Push code with tags
 	git push && git push --tags
 
 build:  ## Build package
-	rm -fr dist/*
-	rm -fr build/*
-	python -m build
-
-buildext:  ## Build extension
-	rm -fr dist/*
-	rm -fr build/*
 	make clean
-	python setup.py build_ext
-	echo "Build extension success"
-	if [ -f build/lib.macosx-12-x86_64-cpython-310/cppfimdlp.cpython-310-darwin.so ] ; then mv build/lib.macosx-12-x86_64-cpython-310/cppfimdlp.cpython-310-darwin.so fimdlp; fi
-	if [ -f build/lib.macosx-10.9-universal2-3.10/cppfimdlp.cpython-310-darwin.so ] ; then mv build/lib.macosx-10.9-universal2-3.10/cppfimdlp.cpython-310-darwin.so fimdlp; fi
+	python -m build --wheel
+
+install:  ## Build extension
+	make clean
+	pip install -e .
 
 audit: ## Audit pip
 	pip-audit

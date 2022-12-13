@@ -1,11 +1,12 @@
 #include <numeric>
 #include <algorithm>
 #include <set>
+#include <cmath>
 #include "CPPFImdlp.h"
 #include "Metrics.h"
 
 namespace mdlp {
-    CPPFImdlp::CPPFImdlp(bool proposal):proposal(proposal), indices(indices_t()), y(labels_t()), metrics(Metrics(y, indices))
+    CPPFImdlp::CPPFImdlp(bool proposal):proposal(proposal), indices(indices_t()), X(samples_t()), y(labels_t()), metrics(Metrics(y, indices))
     {
     }
     CPPFImdlp::~CPPFImdlp()

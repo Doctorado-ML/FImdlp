@@ -4,7 +4,8 @@ requires = ["setuptools", "cython", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["fimdlp"]
+#packages = ["fimdlp"]
+package-dir = { "" = "src" }
 license-files = ["LICENSE"]
 
 [tool.setuptools.dynamic]
@@ -17,8 +18,8 @@ authors = [
     { name = "Ricardo Montañana", email = "ricardo.montanana@alu.uclm.es" },
 ]
 dynamic = ['version']
-dependencies = ["numpy"]
-requires-python = ">=3.8"
+dependencies = ["numpy", "joblib"]
+requires-python = ">=3.9"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
@@ -30,7 +31,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
 ]
@@ -40,7 +40,7 @@ Home = "https://github.com/doctorado-ml/FImdlp"
 
 [tool.black]
 line-length = 79
-target_version = ['py38', 'py39', 'py310']
+target_version = ['py39', 'py310']
 include = '\.pyi?$'
 exclude = '''
 /(
@@ -55,3 +55,7 @@ exclude = '''
   | dist
 )/
 '''
+[tool.flake8]
+per-file-ignores = ['__init__.py:F401']
+max-line-length = 79
+count = true
