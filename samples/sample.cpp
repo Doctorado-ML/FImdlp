@@ -10,7 +10,7 @@ int main(int argc, char** argv)
 {
     ArffFiles file;
     vector<string> lines;
-    string path = "../fimdlp/testcpp/datasets/";
+    string path = "../src/fimdlp/testcpp/datasets/";
     map<string, bool > datasets = {
         {"mfeat-factors", true},
         {"iris", true},

@@ -18,9 +18,9 @@ ap.add_argument("--proposal", action="store_true")
 ap.add_argument("--original", dest="proposal", action="store_false")
 ap.add_argument("dataset", type=str, choices=datasets.keys())
 args = ap.parse_args()
-relative = "" if os.path.isdir("fimdlp") else ".."
+relative = "" if os.path.isdir("src") else ".."
 file_name = os.path.join(
-    relative, "fimdlp", "testcpp", "datasets", args.dataset
+    relative, "src", "fimdlp", "testcpp", "datasets", args.dataset
 )
 data = arff.loadarff(file_name + ".arff")
 df = pd.DataFrame(data[0])
