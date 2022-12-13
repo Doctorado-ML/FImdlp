@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    branches: [master, ci]
   pull_request:
     branches: [master]
   workflow_dispatch:
@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
         python: [3.9, "3.10"]
 
     steps:
@@ -27,7 +27,7 @@ jobs:
           pip install -q --upgrade codecov coverage black flake8 codacy-coverage
       - name: Build and install
         run: |
-          cd /home/runner/work/FImdlp/FImdlp
+          cd work/FImdlp/FImdlp
           make install
       - name: Lint
         run: |
