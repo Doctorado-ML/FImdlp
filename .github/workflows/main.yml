@@ -27,7 +27,7 @@ jobs:
           pip install -q --upgrade codecov coverage black flake8 codacy-coverage
       - name: Build and install
         run: |
-          cd FImdlp
+          cd /home/runner/work/FImdlp/FImdlp
           make install
       - name: Lint
         run: |
