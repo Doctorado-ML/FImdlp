@@ -1,9 +1,9 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
-.PHONY: coverage deps help lint push test doc build
+.PHONY: coverage deps help lint push test build install audit
 
 clean: ## Clean up
-	rm -rf build dist *.egg-info
+	rm -rf build dist src/*.egg-info
 	if [ -f src/fimdlp/cfimdlp.cpp ]; then rm src/fimdlp/cfimdlp.cpp; fi;
 	for file in src/fimdlp/*.so; do \
 		if [ -f $${file} ]; then rm $${file}; fi; \

@@ -74,6 +74,18 @@ class FImdlpTest(unittest.TestCase):
             clf.fit([[1, 2], [3, 4]], [1, 2], features=["a", "b", "c"])
         with self.assertRaises(ValueError):
             clf.fit([[1, 2], [3, 4]], [1, 2], unexpected="class_name")
+        with self.assertRaises(ValueError):
+            clf.fit([[1, 2], [3, 4]], [1, 2], features="01")
+        with self.assertRaises(ValueError):
+            clf.fit([[1, 2], [3, 4]], [1, 2], features=[0, 0])
+        with self.assertRaises(ValueError):
+            clf.fit([[1, 2], [3, 4]], [1, 2], features=[0, 2])
+
+    def test_fit_features(self):
+        clf = FImdlp()
+        clf.fit([[1, 2], [3, 4]], [1, 2], features=[0])
+        res = clf.transform([[1, 2], [3, 4]])
+        self.assertListEqual(res.tolist(), [[0, 2], [0, 4]])
 
     def test_transform_original(self):
         clf = FImdlp(proposal=False)
