@@ -60,11 +60,12 @@ class FImdlpTest(unittest.TestCase):
         self.assertEqual(clf.n_features_, 4)
         self.assertTrue(np.array_equal(X, clf.X_))
         self.assertTrue(np.array_equal(y, clf.y_))
+
         expected = [
             [5.5, 5.800000190734863],
-            [3.0999999046325684],
-            [2.450000047683716, 4.800000190734863, 5.099999904632568],
-            [0.800000011920929, 1.7000000476837158],
+            [2.9000000953674316, 3.3499999046325684],
+            [2.450000047683716, 4.800000190734863],
+            [0.800000011920929, 1.7999999523162842],
         ]
         self.assertListEqual(expected, clf.get_cut_points())
         self.assertListEqual([0, 1, 2, 3], clf.features_)
@@ -108,11 +109,11 @@ class FImdlpTest(unittest.TestCase):
         )
         expected = [
             [0, 0, 1, 1],
-            [2, 0, 1, 1],
+            [2, 1, 1, 1],
             [1, 0, 1, 1],
             [0, 0, 1, 1],
             [1, 0, 1, 1],
-            [1, 0, 1, 1],
+            [1, 1, 1, 1],
             [1, 0, 1, 1],
         ]
         self.assertTrue(np.array_equal(clf.transform(X[90:97]), expected))
