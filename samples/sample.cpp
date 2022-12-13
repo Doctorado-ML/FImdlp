@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <iomanip>
-#include "../src/fimdlp/cppmdlp/CPPFImdlp.h"
+#include "../src/cppmdlp/CPPFImdlp.h"
 
 using namespace std;
 
@@ -10,7 +10,7 @@ int main(int argc, char** argv)
 {
     ArffFiles file;
     vector<string> lines;
-    string path = "../../src/fimdlp/cppmdlp/tests/datasets/";
+    string path = "../../src/cppmdlp/tests/datasets/";
     map<string, bool > datasets = {
         {"mfeat-factors", true},
         {"iris", true},

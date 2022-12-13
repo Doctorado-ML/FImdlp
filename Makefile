@@ -26,10 +26,9 @@ build:  ## Build package
 	make clean
 	python -m build --wheel
 
-buildext:  ## Build extension
+install:  ## Build extension
 	make clean
-	python setup.py build_ext
-	echo "Build extension success"
+	pip install -e .
 
 audit: ## Audit pip
 	pip-audit

@@ -12,8 +12,8 @@ setup(
             name="fimdlp.cppfimdlp",
             sources=[
                 "src/fimdlp/cfimdlp.pyx",
-                "src/fimdlp/cppmdlp/CPPFImdlp.cpp",
-                "src/fimdlp/cppmdlp/Metrics.cpp",
+                "src/cppmdlp/CPPFImdlp.cpp",
+                "src/cppmdlp/Metrics.cpp",
             ],
             language="c++",
             include_dirs=["fimdlp"],

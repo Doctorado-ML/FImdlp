@@ -20,7 +20,7 @@ ap.add_argument("dataset", type=str, choices=datasets.keys())
 args = ap.parse_args()
 relative = "" if os.path.isdir("src") else ".."
 file_name = os.path.join(
-    relative, "src", "fimdlp", "cppmdlp", "tests", "datasets", args.dataset
+    relative, "src", "cppmdlp", "tests", "datasets", args.dataset
 )
 data = arff.loadarff(file_name + ".arff")
 df = pd.DataFrame(data[0])
