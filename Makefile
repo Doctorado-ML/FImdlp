@@ -17,6 +17,7 @@ coverage:
 
 submodule:
 	git submodule update --remote src/cppmdlp
+	git submodule update --merge
 
 lint:  ## Lint and static-check
 	black src
