@@ -16,8 +16,8 @@ class FImdlp(TransformerMixin, BaseEstimator):
     Parameters
     ----------
     n_jobs : int, default=-1
-        The number of jobs to run in parallel. :meth:`fit` and 
-        :meth:`transform`, are parallelized over the features. ``-1`` means 
+        The number of jobs to run in parallel. :meth:`fit` and
+        :meth:`transform`, are parallelized over the features. ``-1`` means
         using all cores available.
 
     Attributes
@@ -28,9 +28,9 @@ class FImdlp(TransformerMixin, BaseEstimator):
         The list of discretizers, one for each feature.
     cut_points_ : list
         The list of cut points for each feature.
-    X_ : array 
+    X_ : array
         the samples used to fit, shape (n_samples, n_features)
-    y_ : array 
+    y_ : array
         the labels used to fit, shape (n_samples,)
     features_ : list
         the list of features to be discretized

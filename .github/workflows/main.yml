@@ -32,7 +32,7 @@ jobs:
       - name: Lint
         run: |
           black --check --diff src
-          flake8 --count src
+          flake8 --count --per-file-ignores="__init__.py:F401" src
       - name: Tests
         run: |
           coverage run -m unittest discover -v - s src

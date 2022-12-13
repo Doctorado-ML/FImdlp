@@ -3,9 +3,14 @@ import sklearn
 from sklearn.datasets import load_iris
 import numpy as np
 from ..mdlp import FImdlp
+from .. import version
+from .._version import __version__
 
 
 class FImdlpTest(unittest.TestCase):
+    def test_version(self):
+        self.assertEqual(version(), __version__)
+
     def test_init(self):
         clf = FImdlp()
         self.assertEqual(-1, clf.n_jobs)

@@ -1,5 +1,7 @@
 # FImdlp
 
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/8b4d784fee13401588aa8c06532a2f6d)](https://www.codacy.com/gh/Doctorado-ML/FImdlp/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Doctorado-ML/FImdlp&amp;utm_campaign=Badge_Grade)
+
 Discretization algorithm based on the paper by Usama M. Fayyad and Keki B. Irani 
 
 ```

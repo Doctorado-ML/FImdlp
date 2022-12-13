@@ -17,7 +17,7 @@ coverage:
 
 lint:  ## Lint and static-check
 	black src
-	flake8 src
+	flake8 --per-file-ignores="__init__.py:F401" src
 
 push:  ## Push code with tags
 	git push && git push --tags
