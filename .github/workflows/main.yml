@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -q --upgrade pip
-          pip install -q scikit-learn
+          pip install -q scikit-learn cython
           pip install -q --upgrade codecov coverage black flake8 codacy-coverage
       - name: Build and install
         run: |
