@@ -4,37 +4,32 @@ SHELL := /bin/bash
 
 clean: ## Clean up
 	rm -rf build dist *.egg-info
-	if [ -f fimdlp/cfimdlp.cpp ]; then rm fimdlp/cfimdlp.cpp; fi;
-	if [ -f fimdlp/cppfimdlp.cpython-310-darwin.so ]; then rm fimdlp/cppfimdlp.cpython-310-darwin.so; fi;
-	if [ -d fimdlp/testcpp/build ]; then rm -fr fimdlp/testcpp/build/*  ; fi;
-	if [ -d fimdlp/testcpp/lcoverage ]; then rm -fr fimdlp/testcpp/lcoverage/*  ; fi;
+	if [ -f src/fimdlp/cfimdlp.cpp ]; then rm src/fimdlp/cfimdlp.cpp; fi;
+	for file in src/fimdlp/*.so; do \
+		if [ -f $${file} ]; then rm $${file}; fi; \
+	done
 
 test:
-	coverage run -m unittest -v fimdlp.tests
+	coverage run -m unittest discover -v -s src
 coverage:
 	make test
 	coverage report -m
 
 lint:  ## Lint and static-check
-	black fimdlp
-	flake8 fimdlp
+	black src
+	flake8 src
 
 push:  ## Push code with tags
 	git push && git push --tags
 
 build:  ## Build package
-	rm -fr dist/*
-	rm -fr build/*
+	make clean
 	python -m build --wheel
 
 buildext:  ## Build extension
-	rm -fr dist/*
-	rm -fr build/*
 	make clean
 	python setup.py build_ext
 	echo "Build extension success"
-	if [ -f build/lib.macosx-12-x86_64-cpython-310/cppfimdlp.cpython-310-darwin.so ] ; then mv build/lib.macosx-12-x86_64-cpython-310/cppfimdlp.cpython-310-darwin.so fimdlp; fi
-	if [ -f build/lib.macosx-10.9-universal2-3.10/cppfimdlp.cpython-310-darwin.so ] ; then mv build/lib.macosx-10.9-universal2-3.10/cppfimdlp.cpython-310-darwin.so fimdlp; fi
 
 audit: ## Audit pip
 	pip-audit
