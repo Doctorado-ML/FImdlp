@@ -7,7 +7,7 @@ from joblib import Parallel, delayed
 
 
 class FImdlp(TransformerMixin, BaseEstimator):
-    def __init__(self, n_jobs=-1, proposal=False):
+    def __init__(self, n_jobs=-1, proposal=0):
         self.n_jobs = n_jobs
         self.proposal = proposal
 
@@ -19,6 +19,11 @@ class FImdlp(TransformerMixin, BaseEstimator):
         The number of jobs to run in parallel. :meth:`fit` and
         :meth:`transform`, are parallelized over the features. ``-1`` means
         using all cores available.
+    proposal : int, default=0
+        The type of algorithm to use computing the cut points.
+        0 - Normal implementation
+        1 - JA Proposal
+        2 - Original proposal
 
     Attributes
     ----------

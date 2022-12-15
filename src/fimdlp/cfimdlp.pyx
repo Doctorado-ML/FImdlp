@@ -6,7 +6,7 @@ from libcpp cimport bool
 cdef extern from "../cppmdlp/CPPFImdlp.h" namespace "mdlp":
     ctypedef float precision_t
     cdef cppclass CPPFImdlp:
-        CPPFImdlp(bool) except + 
+        CPPFImdlp(int) except + 
         CPPFImdlp& fit(vector[precision_t]&, vector[int]&)
         vector[precision_t] getCutPoints()
         
