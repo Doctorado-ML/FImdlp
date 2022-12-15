@@ -14,8 +14,11 @@ datasets = {
 }
 
 ap = argparse.ArgumentParser()
-ap.add_argument("--proposal", action="store_true")
-ap.add_argument("--original", dest="proposal", action="store_false")
+ap.add_argument("--proposal", action="store_const", const=1)
+ap.add_argument("--original", dest="proposal", action="store_const", const=0)
+ap.add_argument(
+    "--alternative", dest="proposal", action="store_const", const=2
+)
 ap.add_argument("dataset", type=str, choices=datasets.keys())
 args = ap.parse_args()
 relative = "" if os.path.isdir("src") else ".."
