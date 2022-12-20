@@ -1,7 +1,7 @@
 # distutils: language = c++
 # cython: language_level = 3
 from libcpp.vector cimport vector
-from libcpp cimport bool
+from libcpp.string cimport string
 
 cdef extern from "../cppmdlp/CPPFImdlp.h" namespace "mdlp":
     ctypedef float precision_t
@@ -9,6 +9,7 @@ cdef extern from "../cppmdlp/CPPFImdlp.h" namespace "mdlp":
         CPPFImdlp(int) except + 
         CPPFImdlp& fit(vector[precision_t]&, vector[int]&)
         vector[precision_t] getCutPoints()
+        string version()
         
 
 cdef class CFImdlp:
@@ -22,4 +23,6 @@ cdef class CFImdlp:
         return self
     def get_cut_points(self):
         return self.thisptr.getCutPoints()
+    def get_version(self):
+        return self.thisptr.version()
  

@@ -99,9 +99,15 @@ class FImdlp(TransformerMixin, BaseEstimator):
         return self
 
     def _fit_discretizer(self, feature):
-        self.discretizer_[feature] = CFImdlp(proposal=self.proposal)
-        self.discretizer_[feature].fit(self.X_[:, feature], self.y_)
-        self.cut_points_[feature] = self.discretizer_[feature].get_cut_points()
+        if feature in self.features_:
+            self.discretizer_[feature] = CFImdlp(proposal=self.proposal)
+            self.discretizer_[feature].fit(self.X_[:, feature], self.y_)
+            self.cut_points_[feature] = self.discretizer_[
+                feature
+            ].get_cut_points()
+        else:
+            self.discretizer_[feature] = None
+            self.cut_points_[feature] = []
 
     def _discretize_feature(self, feature, X, result):
         if feature in self.features_:
