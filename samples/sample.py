@@ -14,10 +14,8 @@ datasets = {
 }
 
 ap = argparse.ArgumentParser()
-ap.add_argument("--proposal", action="store_const", const=1)
-ap.add_argument("--original", dest="proposal", action="store_const", const=0)
 ap.add_argument(
-    "--alternative", dest="proposal", action="store_const", const=2
+    "--alternative", dest="proposal", action="store_const", const=1
 )
 ap.add_argument("dataset", type=str, choices=datasets.keys())
 args = ap.parse_args()
@@ -32,7 +30,7 @@ class_name = df.columns.to_list()[class_column]
 X = df.drop(class_name, axis=1)
 y, _ = pd.factorize(df[class_name])
 X = X.to_numpy()
-test = FImdlp(proposal=args.proposal)
+test = FImdlp(algorithm=args.proposal if args.proposal is not None else 0)
 now = time.time()
 test.fit(X, y)
 fit_time = time.time()

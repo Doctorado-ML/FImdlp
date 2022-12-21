@@ -14,8 +14,8 @@ cdef extern from "../cppmdlp/CPPFImdlp.h" namespace "mdlp":
 
 cdef class CFImdlp:
     cdef CPPFImdlp *thisptr
-    def __cinit__(self, proposal):
-        self.thisptr = new CPPFImdlp(proposal)
+    def __cinit__(self, algorithm):
+        self.thisptr = new CPPFImdlp(algorithm)
     def __dealloc__(self):
         del self.thisptr
     def fit(self, X, y):

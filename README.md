@@ -24,8 +24,8 @@ git clone --recurse-submodules https://github.com/doctorado-ml/FImdlp.git
 
 ```bash
 pip install -e .
-python samples/sample.py iris --original 
-python samples/sample.py iris --proposal
+python samples/sample.py iris  
+python samples/sample.py iris --alternative
 python samples/sample.py -h # for more options
 ```
 
