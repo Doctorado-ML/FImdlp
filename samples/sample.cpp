@@ -1,4 +1,4 @@
-#include "ArffFiles.h"
+#include "../src/cppmdlp/tests/ArffFiles.h"
 #include <iostream>
 #include <vector>
 #include <iomanip>
@@ -41,7 +41,7 @@ int main(int argc, char** argv)
         }
         cout << y[i] << endl;
     }
-    mdlp::CPPFImdlp test = mdlp::CPPFImdlp(false);
+    mdlp::CPPFImdlp test = mdlp::CPPFImdlp(0);
     for (auto i = 0; i < attributes.size(); i++) {
         cout << "Cut points for " << get<0>(attributes[i]) << endl;
         cout << "--------------------------" << setprecision(3) << endl;

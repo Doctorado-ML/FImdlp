@@ -7,14 +7,18 @@ from joblib import Parallel, delayed
 
 
 class FImdlp(TransformerMixin, BaseEstimator):
-    def __init__(self, n_jobs=-1, proposal=False):
+    def __init__(self, algorithm=0, n_jobs=-1):
+        self.algorithm = algorithm
         self.n_jobs = n_jobs
-        self.proposal = proposal
 
     """Fayyad - Irani MDLP discretization algorithm based implementation.
 
     Parameters
     ----------
+    algorithm : int, default=0
+        The type of algorithm to use computing the cut points.
+        0 - Definitive implementation
+        1 - Alternative proposal
     n_jobs : int, default=-1
         The number of jobs to run in parallel. :meth:`fit` and
         :meth:`transform`, are parallelized over the features. ``-1`` means
@@ -94,9 +98,15 @@ class FImdlp(TransformerMixin, BaseEstimator):
         return self
 
     def _fit_discretizer(self, feature):
-        self.discretizer_[feature] = CFImdlp(proposal=self.proposal)
-        self.discretizer_[feature].fit(self.X_[:, feature], self.y_)
-        self.cut_points_[feature] = self.discretizer_[feature].get_cut_points()
+        if feature in self.features_:
+            self.discretizer_[feature] = CFImdlp(algorithm=self.algorithm)
+            self.discretizer_[feature].fit(self.X_[:, feature], self.y_)
+            self.cut_points_[feature] = self.discretizer_[
+                feature
+            ].get_cut_points()
+        else:
+            self.discretizer_[feature] = None
+            self.cut_points_[feature] = []
 
     def _discretize_feature(self, feature, X, result):
         if feature in self.features_:
@@ -125,7 +135,10 @@ class FImdlp(TransformerMixin, BaseEstimator):
             raise ValueError(
                 "Shape of input is different from what was seen in `fit`"
             )
-        result = np.zeros_like(X, dtype=np.int32) - 1
+        if len(self.features_) == self.n_features_:
+            result = np.zeros_like(X, dtype=np.int32) - 1
+        else:
+            result = np.zeros_like(X) - 1
         Parallel(n_jobs=self.n_jobs, prefer="threads")(
             delayed(self._discretize_feature)(feature, X[:, feature], result)
             for feature in range(self.n_features_)
