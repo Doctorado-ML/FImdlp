@@ -1,1 +1,3 @@
 include src/cppmdlp/CPPFImdlp.h
+include src/cppmdlp/typesFImdlp.h
+include src/cppmdlp/Metrics.h
