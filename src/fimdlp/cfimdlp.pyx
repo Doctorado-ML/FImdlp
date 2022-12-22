@@ -11,7 +11,6 @@ cdef extern from "../cppmdlp/CPPFImdlp.h" namespace "mdlp":
         vector[precision_t] getCutPoints()
         string version()
         
-
 cdef class CFImdlp:
     cdef CPPFImdlp *thisptr
     def __cinit__(self, algorithm):
@@ -25,4 +24,3 @@ cdef class CFImdlp:
         return self.thisptr.getCutPoints()
     def get_version(self):
         return self.thisptr.version()
- 
