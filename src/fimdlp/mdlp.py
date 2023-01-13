@@ -19,6 +19,7 @@ class FImdlp(TransformerMixin, BaseEstimator):
         The type of algorithm to use computing the cut points.
         0 - Definitive implementation
         1 - Alternative proposal
+        2 - Classic proposal
     n_jobs : int, default=-1
         The number of jobs to run in parallel. :meth:`fit` and
         :meth:`transform`, are parallelized over the features. ``-1`` means
