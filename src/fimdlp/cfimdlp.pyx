@@ -24,3 +24,8 @@ cdef class CFImdlp:
         return self.thisptr.getCutPoints()
     def get_version(self):
         return self.thisptr.version()
+
+cdef extern from "Factorize.h" namespace "utils":
+    vector[int] cppFactorize(vector[string] &input_vector)
+def factorize(input_vector):
+    return cppFactorize(input_vector)

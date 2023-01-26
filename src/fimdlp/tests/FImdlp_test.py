@@ -1,7 +1,8 @@
 import unittest
 import sklearn
-from sklearn.datasets import load_iris
 import numpy as np
+from sklearn.datasets import load_iris
+from ..cppfimdlp import factorize
 from ..mdlp import FImdlp
 from .. import version
 from .._version import __version__
@@ -159,3 +160,54 @@ class FImdlpTest(unittest.TestCase):
         with self.assertRaises(sklearn.exceptions.NotFittedError):
             clf = FImdlp(algorithm=1)
             clf.transform([[1, 2], [3, 4]])
+
+    def test_factorize(self):
+        source = [
+            b"f0",
+            b"f1",
+            b"f2",
+            b"f3",
+            b"f4",
+            b"f5",
+            b"f6",
+            b"f1",
+            b"f1",
+            b"f7",
+            b"f8",
+        ]
+        expected = [0, 1, 2, 3, 4, 5, 6, 1, 1, 7, 8]
+        computed = factorize(source)
+        self.assertListEqual(expected, computed)
+
+    def test_join_transform(self):
+        y = ["f0", "f0", "f2", "f3", "f4"]
+        x = [
+            [0, 1, 2, 3, 4],
+            [0, 1, 2, 3, 4],
+            [1, 2, 3, 4, 5],
+            [2, 3, 4, 5, 6],
+            [3, 4, 5, 6, 7],
+        ]
+        expected = [
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [1, 1, 1, 1],
+            [2, 2, 2, 2],
+            [2, 2, 2, 2],
+        ]
+        clf = FImdlp()
+        computed = clf.join_transform(x, y, 0)
+        for computed, expected in zip(computed, expected):
+            self.assertListEqual(expected, computed.tolist())
+
+    def test_join_transform_error(self):
+        y = ["f0", "f0", "f2", "f3", "f4"]
+        x = [
+            [0, 1, 2, 3, 4],
+            [0, 1, 2, 3, 4],
+            [1, 2, 3, 4, 5],
+            [2, 3, 4, 5, 6],
+            [3, 4, 5, 6, 7],
+        ]
+        with self.assertRaises(ValueError):
+            FImdlp().join_transform(x, y, 5)

@@ -1,5 +1,5 @@
 import numpy as np
-from .cppfimdlp import CFImdlp
+from .cppfimdlp import CFImdlp, factorize
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
@@ -33,21 +33,17 @@ class FImdlp(TransformerMixin, BaseEstimator):
         The list of discretizers, one for each feature.
     cut_points_ : list
         The list of cut points for each feature.
-    X_ : array
-        the samples used to fit, shape (n_samples, n_features)
-    y_ : array
-        the labels used to fit, shape (n_samples,)
+    X_ : array, shape (n_samples, n_features)
+        the samples used to fit
+    y_ : array, shape(n_samples,)
+        the labels used to fit
     features_ : list
         the list of features to be discretized
     """
 
-    def _check_params_fit(self, X, y, expected_args, kwargs):
-        """Check the common parameters passed to fit"""
+    def _check_args(self, X, y, expected_args, kwargs):
         # Check that X and y have correct shape
         X, y = check_X_y(X, y)
-        # Store the classes seen during fit
-        self.classes_ = unique_labels(y)
-        self.n_classes_ = self.classes_.shape[0]
         # Default values
         self.features_ = [i for i in range(X.shape[1])]
         for key, value in kwargs.items():
@@ -68,15 +64,20 @@ class FImdlp(TransformerMixin, BaseEstimator):
             raise ValueError("Feature index out of range")
         return X, y
 
+    def _update_params(self, X, y):
+        # Store the classes seen during fit
+        self.classes_ = unique_labels(y)
+        self.n_classes_ = self.classes_.shape[0]
+        self.n_features_ = X.shape[1]
+
     def fit(self, X, y, **kwargs):
         """A reference implementation of a fitting function for a transformer.
         Parameters
         ----------
-        X : {array-like, sparse matrix}, shape (n_samples, n_features)
+        X : array, shape (n_samples, n_features)
             The training input samples.
-        y : None
-            There is no need of a target in a transformer, yet the pipeline API
-            requires this parameter.
+        y : array, shape (n_samples,)
+            the labels used to fit
         features : list, default=[i for i in range(n_features)]
             The list of features to be discretized.
         Returns
@@ -84,10 +85,10 @@ class FImdlp(TransformerMixin, BaseEstimator):
         self : object
             Returns self.
         """
-        X, y = self._check_params_fit(
+        X, y = self._check_args(
             X, y, expected_args=["features"], kwargs=kwargs
         )
-        self.n_features_ = X.shape[1]
+        self._update_params(X, y)
         self.X_ = X
         self.y_ = y
         self.discretizer_ = [None] * self.n_features_
@@ -119,7 +120,7 @@ class FImdlp(TransformerMixin, BaseEstimator):
         """Discretize X values.
         Parameters
         ----------
-        X : {array-like}, shape (n_samples, n_features)
+        X : array, shape (n_samples, n_features)
             The input samples.
         Returns
         -------
@@ -145,6 +146,34 @@ class FImdlp(TransformerMixin, BaseEstimator):
             for feature in range(self.n_features_)
         )
         return result
+
+    def join_transform(self, X, y, feature, **kwargs):
+        """Join the selected feature with the labels and discretize the values
+        join - fit - transform
+
+        Parameters
+        ----------
+        X : array, shape (n_samples, n_features)
+            The input samples.
+        y : array
+            the labels used to fit
+        feature : int
+            index of the feature to join with the labels
+        """
+        X, y = self._check_args(
+            X, y, expected_args=["features"], kwargs=kwargs
+        )
+        if feature < 0 or feature >= X.shape[1]:
+            raise ValueError(
+                f"Feature {feature} not in range [0, {X.shape[1]})"
+            )
+        self.y_join_ = [
+            f"{str(item_y)}{str(item_x)}".encode()
+            for item_y, item_x in zip(y, X[:, feature])
+        ]
+        yy = factorize(self.y_join_)
+        XX = np.delete(X, feature, axis=1)
+        return self.fit(XX, yy).transform(XX)
 
     def get_cut_points(self):
         """Get the cut points for each feature.
