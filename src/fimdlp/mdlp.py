@@ -27,7 +27,7 @@ class FImdlp(TransformerMixin, BaseEstimator):
 
     Attributes
     ----------
-    n_features_ : int
+    n_features_in_ : int
         The number of features of the data passed to :meth:`fit`.
     discretizer_ : list
         The list of discretizers, one for each feature.
@@ -40,6 +40,9 @@ class FImdlp(TransformerMixin, BaseEstimator):
     features_ : list
         the list of features to be discretized
     """
+
+    def _more_tags(self):
+        return {"preserves_dtype": [np.int32], "requires_y": True}
 
     def _check_args(self, X, y, expected_args, kwargs):
         # Check that X and y have correct shape
@@ -68,7 +71,7 @@ class FImdlp(TransformerMixin, BaseEstimator):
         # Store the classes seen during fit
         self.classes_ = unique_labels(y)
         self.n_classes_ = self.classes_.shape[0]
-        self.n_features_ = X.shape[1]
+        self.n_features_in_ = X.shape[1]
 
     def fit(self, X, y, **kwargs):
         """A reference implementation of a fitting function for a transformer.
@@ -91,11 +94,11 @@ class FImdlp(TransformerMixin, BaseEstimator):
         self._update_params(X, y)
         self.X_ = X
         self.y_ = y
-        self.discretizer_ = [None] * self.n_features_
-        self.cut_points_ = [None] * self.n_features_
+        self.discretizer_ = [None] * self.n_features_in_
+        self.cut_points_ = [None] * self.n_features_in_
         Parallel(n_jobs=self.n_jobs, prefer="threads")(
             delayed(self._fit_discretizer)(feature)
-            for feature in range(self.n_features_)
+            for feature in range(self.n_features_in_)
         )
         return self
 
@@ -128,22 +131,22 @@ class FImdlp(TransformerMixin, BaseEstimator):
             The array containing the discretized values of ``X``.
         """
         # Check is fit had been called
-        check_is_fitted(self, "n_features_")
+        check_is_fitted(self, "n_features_in_")
         # Input validation
         X = check_array(X)
         # Check that the input is of the same shape as the one passed
         # during fit.
-        if X.shape[1] != self.n_features_:
+        if X.shape[1] != self.n_features_in_:
             raise ValueError(
                 "Shape of input is different from what was seen in `fit`"
             )
-        if len(self.features_) == self.n_features_:
+        if len(self.features_) == self.n_features_in_:
             result = np.zeros_like(X, dtype=np.int32) - 1
         else:
             result = np.zeros_like(X) - 1
         Parallel(n_jobs=self.n_jobs, prefer="threads")(
             delayed(self._discretize_feature)(feature, X[:, feature], result)
-            for feature in range(self.n_features_)
+            for feature in range(self.n_features_in_)
         )
         return result
 
@@ -183,6 +186,6 @@ class FImdlp(TransformerMixin, BaseEstimator):
             The list of cut points for each feature.
         """
         result = []
-        for feature in range(self.n_features_):
+        for feature in range(self.n_features_in_):
             result.append(self.cut_points_[feature])
         return result

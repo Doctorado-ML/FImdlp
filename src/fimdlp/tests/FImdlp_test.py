@@ -2,6 +2,7 @@ import unittest
 import sklearn
 import numpy as np
 from sklearn.datasets import load_iris
+from sklearn.utils.estimator_checks import check_estimator
 from ..cppfimdlp import factorize
 from ..mdlp import FImdlp
 from .. import version
@@ -23,13 +24,13 @@ class FImdlpTest(unittest.TestCase):
     def test_fit_definitive(self):
         clf = FImdlp(algorithm=0)
         clf.fit([[1, 2], [3, 4]], [1, 2])
-        self.assertEqual(clf.n_features_, 2)
+        self.assertEqual(clf.n_features_in_, 2)
         self.assertListEqual(clf.X_.tolist(), [[1, 2], [3, 4]])
         self.assertListEqual(clf.y_.tolist(), [1, 2])
         self.assertListEqual([[2.0], [3.0]], clf.get_cut_points())
         X, y = load_iris(return_X_y=True)
         clf.fit(X, y)
-        self.assertEqual(clf.n_features_, 4)
+        self.assertEqual(clf.n_features_in_, 4)
         self.assertTrue(np.array_equal(X, clf.X_))
         self.assertTrue(np.array_equal(y, clf.y_))
         expected = [
@@ -46,13 +47,13 @@ class FImdlpTest(unittest.TestCase):
     def test_fit_alternative(self):
         clf = FImdlp(algorithm=1)
         clf.fit([[1, 2], [3, 4]], [1, 2])
-        self.assertEqual(clf.n_features_, 2)
+        self.assertEqual(clf.n_features_in_, 2)
         self.assertListEqual(clf.X_.tolist(), [[1, 2], [3, 4]])
         self.assertListEqual(clf.y_.tolist(), [1, 2])
         self.assertListEqual([[2], [3]], clf.get_cut_points())
         X, y = load_iris(return_X_y=True)
         clf.fit(X, y)
-        self.assertEqual(clf.n_features_, 4)
+        self.assertEqual(clf.n_features_in_, 4)
         self.assertTrue(np.array_equal(X, clf.X_))
         self.assertTrue(np.array_equal(y, clf.y_))
 
@@ -107,7 +108,7 @@ class FImdlpTest(unittest.TestCase):
         )
         X, y = load_iris(return_X_y=True)
         clf.fit(X, y)
-        self.assertEqual(clf.n_features_, 4)
+        self.assertEqual(clf.n_features_in_, 4)
         self.assertTrue(np.array_equal(X, clf.X_))
         self.assertTrue(np.array_equal(y, clf.y_))
         X_transformed = clf.transform(X)
@@ -139,7 +140,7 @@ class FImdlpTest(unittest.TestCase):
         )
         X, y = load_iris(return_X_y=True)
         clf.fit(X, y)
-        self.assertEqual(clf.n_features_, 4)
+        self.assertEqual(clf.n_features_in_, 4)
         self.assertTrue(np.array_equal(X, clf.X_))
         self.assertTrue(np.array_equal(y, clf.y_))
         self.assertListEqual(
@@ -213,3 +214,7 @@ class FImdlpTest(unittest.TestCase):
         ]
         with self.assertRaises(ValueError):
             FImdlp().join_transform(x, y, 5)
+
+    def test_sklearn_transformer(self):
+        for check, test in check_estimator(FImdlp(), generate_only=True):
+            test(check)

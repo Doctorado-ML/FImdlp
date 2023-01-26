@@ -13,7 +13,9 @@ cdef extern from "../cppmdlp/CPPFImdlp.h" namespace "mdlp":
         
 cdef class CFImdlp:
     cdef CPPFImdlp *thisptr
-    def __cinit__(self, algorithm):
+    cdef int algorithm
+    def __cinit__(self, algorithm:int ):
+        self.algorithm = algorithm
         self.thisptr = new CPPFImdlp(algorithm)
     def __dealloc__(self):
         del self.thisptr
@@ -24,6 +26,8 @@ cdef class CFImdlp:
         return self.thisptr.getCutPoints()
     def get_version(self):
         return self.thisptr.version()
+    def __reduce__(self):
+        return (CFImdlp, (self.algorithm,))
 
 cdef extern from "Factorize.h" namespace "utils":
     vector[int] cppFactorize(vector[string] &input_vector)
