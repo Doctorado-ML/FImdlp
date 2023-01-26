@@ -199,6 +199,8 @@ class FImdlpTest(unittest.TestCase):
         computed = clf.join_transform(x, y, 0)
         for computed, expected in zip(computed, expected):
             self.assertListEqual(expected, computed.tolist())
+        expected_y = [b"f00", b"f00", b"f21", b"f32", b"f43"]
+        self.assertListEqual(expected_y, clf.y_join_)
 
     def test_join_transform_error(self):
         y = ["f0", "f0", "f2", "f3", "f4"]
