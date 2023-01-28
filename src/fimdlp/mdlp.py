@@ -150,6 +150,21 @@ class FImdlp(TransformerMixin, BaseEstimator):
         )
         return result
 
+    def factorize(self, yy):
+        """Factorize the input labels
+
+        Parameters
+        ----------
+        yy : array, shape (n_samples,)
+            Labels to be factorized, MUST be bytes, i.e. b"0", b"1", ...
+
+        Returns
+        -------
+        array, shape (n_samples,)
+            Factorized labels
+        """
+        return factorize(yy)
+
     def join_transform(self, X, y, feature, **kwargs):
         """Join the selected feature with the labels and discretize the values
         join - fit - transform
@@ -174,7 +189,7 @@ class FImdlp(TransformerMixin, BaseEstimator):
             f"{str(item_y)}{str(item_x)}".encode()
             for item_y, item_x in zip(y, X[:, feature])
         ]
-        yy = factorize(self.y_join_)
+        yy = self.factorize(self.y_join_)
         XX = np.delete(X, feature, axis=1)
         return self.fit(XX, yy).transform(XX)
 

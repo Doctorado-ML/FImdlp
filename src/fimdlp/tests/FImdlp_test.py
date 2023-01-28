@@ -162,7 +162,7 @@ class FImdlpTest(unittest.TestCase):
             clf = FImdlp(algorithm=1)
             clf.transform([[1, 2], [3, 4]])
 
-    def test_factorize(self):
+    def test_cppfactorize(self):
         source = [
             b"f0",
             b"f1",
@@ -214,6 +214,16 @@ class FImdlpTest(unittest.TestCase):
         ]
         with self.assertRaises(ValueError):
             FImdlp().join_transform(x, y, 5)
+
+    def test_factorize(self):
+        y = np.array([b"f0", b"f0", b"f2", b"f3", b"f4"])
+        clf = FImdlp()
+        computed = clf.factorize(y)
+        self.assertListEqual([0, 0, 1, 2, 3], computed)
+        y = [b"f4", b"f0", b"f0", b"f2", b"f3"]
+        clf = FImdlp()
+        computed = clf.factorize(y)
+        self.assertListEqual([0, 1, 1, 2, 3], computed)
 
     def test_sklearn_transformer(self):
         for check, test in check_estimator(FImdlp(), generate_only=True):
