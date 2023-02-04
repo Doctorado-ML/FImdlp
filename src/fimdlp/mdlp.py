@@ -177,47 +177,8 @@ class FImdlp(TransformerMixin, BaseEstimator):
             result.append(self.cut_points_[feature])
         return result
 
-
-class MultiDiscretizer:
-    def __init__(self, algorithm=0, n_jobs=-1):
-        self.algorithm = algorithm
-        self.n_jobs = n_jobs
-
-    def initial_fit_transform(self, X, y):
-        X, y = check_X_y(X, y)
-        self.X_ = X
-        self.y_ = y
-        self.n_features_in_ = X.shape[1]
-        self.discretizers_ = [None] * self.n_features_in_
-        self.discretized_ = [None] * self.n_features_in_
-        # self.yy_ = [None] * self.n_features_in_
-        self.X_d_ = np.zeros_like(X, dtype=np.int32) - 1
-        for feature in range(self.n_features_in_):
-            self.discretizers_[feature] = FImdlp(
-                algorithm=self.algorithm, n_jobs=self.n_jobs
-            )
-            self.discretized_[feature] = self.discretizers_[
-                feature
-            ].fit_transform(X[:, feature].reshape(-1, 1), y)
-            # self.yy_[feature] = self.discretizers_[feature].factorize(y)
-            self.X_d_[:, feature] = self.discretized_[feature].ravel()
-        return self.X_d_
-
-    def transform(self, X):
-        X = check_array(X)
-        if not hasattr(self, "discretizers_"):
-            raise ValueError("Must call fit_transform first")
-        result = np.zeros_like(X, dtype=np.int32) - 1
-        for feature in range(self.n_features_in_):
-            result[:, feature] = (
-                self.discretizers_[feature]
-                .transform(X[:, feature].reshape(-1, 1))
-                .ravel()
-            )
-        return result
-
-    def join_transform(self, features, target):
-        """Join the selected features with the labels and discretize the values
+    def join_fit(self, features, target, data):
+        """Join the selected features with the labels and fit the discretizer
         of the target variable
         join - fit - transform
 
@@ -227,8 +188,12 @@ class MultiDiscretizer:
             index of the features to join with the labels
         target : [int]
             index of the target variable to discretize
+
+        Returns
+        -------
+        result: np.array
+            The target variable newly discretized
         """
-        # Check is fit had been called
         check_is_fitted(self, "n_features_in_")
         if len(features) < 1 or len(features) > self.n_features_in_:
             raise ValueError(
@@ -247,21 +212,9 @@ class MultiDiscretizer:
             )
         y_join = [
             f"{str(item_y)}{''.join([str(x) for x in items_x])}".encode()
-            for item_y, items_x in zip(self.y_, self.X_d_[:, features])
+            for item_y, items_x in zip(self.y_, data[:, features])
         ]
-        self.yy_[target] = self.discretizer_.factorize(y_join)
-        self.discretizers_[target] = FImdlp(
-            algorithm=self.algorithm, n_jobs=self.n_jobs
-        )
-        self.discretized_[target] = self.discretizers_[target].fit_transform(
-            self.X_[:, target].reshape(-1, 1), self.yy_[target]
-        )
-        return self.discretized_[target]
-
-
-# from sklearn.datasets import load_wine
-# X, y = load_wine(return_X_y=True)
-# from fimdlp.mdlp import MultiDiscretizer
-# clf = MultiDiscretizer()
-# clf.fit(X, y)
-# clf.join_transform([1, 3, 5], 7)
+        self.discretizer_[target].fit(self.X_[:, target], factorize(y_join))
+        self.cut_points_[target] = self.discretizer_[target].get_cut_points()
+        # return the discretized target variable with the new cut points
+        return np.searchsorted(self.cut_points_[target], self.X_[:, target])
