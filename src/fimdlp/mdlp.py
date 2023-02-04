@@ -183,25 +183,38 @@ class MultiDiscretizer:
         self.algorithm = algorithm
         self.n_jobs = n_jobs
 
-    def fit_transform(self, X, y, **kwargs):
+    def initial_fit_transform(self, X, y):
         X, y = check_X_y(X, y)
         self.X_ = X
         self.y_ = y
         self.n_features_in_ = X.shape[1]
-        self.discretizer_ = FImdlp(
-            algorithm=self.algorithm, n_jobs=self.n_jobs
-        )
         self.discretizers_ = [None] * self.n_features_in_
         self.discretized_ = [None] * self.n_features_in_
-        self.yy_ = [None] * self.n_features_in_
-        self.X_d_ = self.discretizer_.fit_transform(X, y, **kwargs)
+        # self.yy_ = [None] * self.n_features_in_
+        self.X_d_ = np.zeros_like(X, dtype=np.int32) - 1
+        for feature in range(self.n_features_in_):
+            self.discretizers_[feature] = FImdlp(
+                algorithm=self.algorithm, n_jobs=self.n_jobs
+            )
+            self.discretized_[feature] = self.discretizers_[
+                feature
+            ].fit_transform(X[:, feature].reshape(-1, 1), y)
+            # self.yy_[feature] = self.discretizers_[feature].factorize(y)
+            self.X_d_[:, feature] = self.discretized_[feature].ravel()
         return self.X_d_
 
     def transform(self, X):
         X = check_array(X)
-        if not hasattr(self, "discretizer_"):
+        if not hasattr(self, "discretizers_"):
             raise ValueError("Must call fit_transform first")
-        return self.discretizer_.transform(X)
+        result = np.zeros_like(X, dtype=np.int32) - 1
+        for feature in range(self.n_features_in_):
+            result[:, feature] = (
+                self.discretizers_[feature]
+                .transform(X[:, feature].reshape(-1, 1))
+                .ravel()
+            )
+        return result
 
     def join_transform(self, features, target):
         """Join the selected features with the labels and discretize the values
