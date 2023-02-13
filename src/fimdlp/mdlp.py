@@ -119,6 +119,15 @@ class FImdlp(TransformerMixin, BaseEstimator):
         else:
             result[:, feature] = X
 
+    def range_features(self):
+        res = []
+        for i in range(self.n_features_in_):
+            if i in self.features_:
+                res.append(list(range(len(self.cut_points_[i]))))
+            else:
+                res.append([])
+        return res
+
     def transform(self, X):
         """Discretize X values.
         Parameters
@@ -214,6 +223,7 @@ class FImdlp(TransformerMixin, BaseEstimator):
             f"{str(item_y)}{''.join([str(x) for x in items_x])}".encode()
             for item_y, items_x in zip(self.y_, data[:, features])
         ]
+        self.y_join = y_join
         self.discretizer_[target].fit(self.X_[:, target], factorize(y_join))
         self.cut_points_[target] = self.discretizer_[target].get_cut_points()
         # return the discretized target variable with the new cut points
