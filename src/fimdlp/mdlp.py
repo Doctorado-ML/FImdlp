@@ -119,15 +119,6 @@ class FImdlp(TransformerMixin, BaseEstimator):
         else:
             result[:, feature] = X
 
-    def range_features(self):
-        res = []
-        for i in range(self.n_features_in_):
-            if i in self.features_:
-                res.append(list(range(len(self.cut_points_[i]))))
-            else:
-                res.append([])
-        return res
-
     def transform(self, X):
         """Discretize X values.
         Parameters
@@ -185,6 +176,23 @@ class FImdlp(TransformerMixin, BaseEstimator):
         for feature in range(self.n_features_in_):
             result.append(self.cut_points_[feature])
         return result
+
+    def get_states_feature(self, feature):
+        """Return the states a feature can take
+
+        Parameters
+        ----------
+        feature : int
+            feature to get the states
+
+        Returns
+        -------
+        list
+            states of the feature
+        """
+        if feature in self.features_:
+            return list(range(len(self.cut_points_[feature]) + 1))
+        return None
 
     def join_fit(self, features, target, data):
         """Join the selected features with the labels and fit the discretizer
