@@ -4,22 +4,19 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from joblib import Parallel, delayed
+from ._version import __version__
+
+# from ._version import __version__
 
 
 class FImdlp(TransformerMixin, BaseEstimator):
-    def __init__(self, algorithm=0, n_jobs=-1):
-        self.algorithm = algorithm
+    def __init__(self, n_jobs=-1):
         self.n_jobs = n_jobs
 
     """Fayyad - Irani MDLP discretization algorithm based implementation.
 
     Parameters
     ----------
-    algorithm : int, default=0
-        The type of algorithm to use computing the cut points.
-        0 - Definitive implementation
-        1 - Alternative proposal
-        2 - Classic proposal
     n_jobs : int, default=-1
         The number of jobs to run in parallel. :meth:`fit` and
         :meth:`transform`, are parallelized over the features. ``-1`` means
@@ -73,6 +70,10 @@ class FImdlp(TransformerMixin, BaseEstimator):
         self.n_classes_ = self.classes_.shape[0]
         self.n_features_in_ = X.shape[1]
 
+    @staticmethod
+    def get_version():
+        return f"{__version__}({CFImdlp().get_version().decode()})"
+
     def fit(self, X, y, **kwargs):
         """A reference implementation of a fitting function for a transformer.
         Parameters
@@ -104,7 +105,7 @@ class FImdlp(TransformerMixin, BaseEstimator):
 
     def _fit_discretizer(self, feature):
         if feature in self.features_:
-            self.discretizer_[feature] = CFImdlp(algorithm=self.algorithm)
+            self.discretizer_[feature] = CFImdlp()
             self.discretizer_[feature].fit(self.X_[:, feature], self.y_)
             self.cut_points_[feature] = self.discretizer_[
                 feature
@@ -205,6 +206,8 @@ class FImdlp(TransformerMixin, BaseEstimator):
             index of the features to join with the labels
         target : [int]
             index of the target variable to discretize
+        data: [array] shape (n_samples, n_features)
+            dataset that contains the features to join
 
         Returns
         -------
@@ -227,11 +230,13 @@ class FImdlp(TransformerMixin, BaseEstimator):
             raise ValueError(
                 f"Target {target} not in range [0, {self.n_features_in_})"
             )
+        if target in features:
+            raise ValueError("Target cannot in features to join")
         y_join = [
             f"{str(item_y)}{''.join([str(x) for x in items_x])}".encode()
             for item_y, items_x in zip(self.y_, data[:, features])
         ]
-        self.y_join = y_join
+        self.y_join_ = y_join
         self.discretizer_[target].fit(self.X_[:, target], factorize(y_join))
         self.cut_points_[target] = self.discretizer_[target].get_cut_points()
         # return the discretized target variable with the new cut points
