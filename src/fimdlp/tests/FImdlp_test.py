@@ -205,7 +205,8 @@ class FImdlpTest(unittest.TestCase):
         computed = clf.factorize(y)
         self.assertListEqual([0, 1, 1, 2, 3], computed)
 
-    def test_sklearn_transformer(self):
+    @staticmethod
+    def test_sklearn_transformer():
         for check, test in check_estimator(FImdlp(), generate_only=True):
             test(check)
 

@@ -151,7 +151,8 @@ class FImdlp(TransformerMixin, BaseEstimator):
         )
         return result
 
-    def factorize(self, yy):
+    @staticmethod
+    def factorize(yy):
         """Factorize the input labels
 
         Parameters
