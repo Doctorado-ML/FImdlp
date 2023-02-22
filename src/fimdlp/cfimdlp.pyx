@@ -6,15 +6,15 @@ from libcpp.string cimport string
 cdef extern from "../cppmdlp/CPPFImdlp.h" namespace "mdlp":
     ctypedef float precision_t
     cdef cppclass CPPFImdlp:
-        CPPFImdlp(int) except + 
+        CPPFImdlp() except + 
         CPPFImdlp& fit(vector[precision_t]&, vector[int]&)
         vector[precision_t] getCutPoints()
         string version()
         
 cdef class CFImdlp:
     cdef CPPFImdlp *thisptr
-    def __cinit__(self, algorithm):
-        self.thisptr = new CPPFImdlp(algorithm)
+    def __cinit__(self):
+        self.thisptr = new CPPFImdlp()
     def __dealloc__(self):
         del self.thisptr
     def fit(self, X, y):
@@ -24,3 +24,10 @@ cdef class CFImdlp:
         return self.thisptr.getCutPoints()
     def get_version(self):
         return self.thisptr.version()
+    def __reduce__(self):
+        return (CFImdlp, ())
+
+cdef extern from "Factorize.h" namespace "utils":
+    vector[int] cppFactorize(vector[string] &input_vector)
+def factorize(input_vector):
+    return cppFactorize(input_vector)

@@ -14,10 +14,13 @@ setup(
                 "src/fimdlp/cfimdlp.pyx",
                 "src/cppmdlp/CPPFImdlp.cpp",
                 "src/cppmdlp/Metrics.cpp",
+                "src/fimdlp/Factorize.cpp",
             ],
             language="c++",
             include_dirs=["fimdlp"],
-            extra_compile_args=["-std=c++2a"],
+            extra_compile_args=[
+                "-std=c++11",
+            ],
         ),
     ]
 )
