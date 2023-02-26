@@ -3,7 +3,7 @@ import sklearn
 import numpy as np
 from sklearn.datasets import load_iris
 from sklearn.utils.estimator_checks import check_estimator
-from ..cppfimdlp import CFImdlp, factorize
+from ..cppfimdlp import CFImdlp, factorize, CArffFiles
 from ..mdlp import FImdlp
 from .. import __version__
 
@@ -11,6 +11,8 @@ from .. import __version__
 
 
 class FImdlpTest(unittest.TestCase):
+    delta = 1e-6  # same tolerance as in C++ code
+
     def test_version(self):
         clf = FImdlp()
         self.assertEqual(
@@ -21,8 +23,12 @@ class FImdlpTest(unittest.TestCase):
     def test_init(self):
         clf = FImdlp()
         self.assertEqual(-1, clf.n_jobs)
-        clf = FImdlp(n_jobs=7)
+        self.assertEqual(3, clf.min_length)
+        self.assertEqual(1e6, clf.max_depth)
+        clf = FImdlp(n_jobs=7, min_length=24, max_depth=17)
         self.assertEqual(7, clf.n_jobs)
+        self.assertEqual(24, clf.min_length)
+        self.assertEqual(17, clf.max_depth)
 
     def test_fit_definitive(self):
         clf = FImdlp()
@@ -32,15 +38,15 @@ class FImdlpTest(unittest.TestCase):
         self.assertTrue(np.array_equal(X, clf.X_))
         self.assertTrue(np.array_equal(y, clf.y_))
         expected = [
-            [5.449999809265137, 5.75],
-            [2.75, 2.8499999046325684, 2.95, 3.05, 3.3499999046325684],
-            [2.45, 4.75, 5.050000190734863],
+            [5.45, 5.75],
+            [2.75, 2.85, 2.95, 3.05, 3.35],
+            [2.45, 4.75, 5.05],
             [0.8, 1.75],
         ]
         computed = clf.get_cut_points()
         for item_computed, item_expected in zip(computed, expected):
             for x_, y_ in zip(item_computed, item_expected):
-                self.assertAlmostEqual(x_, y_)
+                self.assertAlmostEqual(x_, y_, delta=self.delta)
         self.assertListEqual([0, 1, 2, 3], clf.features_)
         clf.fit(X, y, features=[0, 2, 3])
         self.assertListEqual([0, 2, 3], clf.features_)
@@ -227,3 +233,92 @@ class FImdlpTest(unittest.TestCase):
         X, y = load_iris(return_X_y=True)
         clf.fit(X, y)
         self.assertIsNone(clf.get_states_feature(4))
+
+    def test_MaxDepth(self):
+        clf = FImdlp(max_depth=1)
+        X, y = load_iris(return_X_y=True)
+        clf.fit(X, y)
+        expected_cutpoints = [
+            [5.45],
+            [3.35],
+            [2.45],
+            [0.8],
+        ]
+        expected_depths = [1] * 4
+        self.assertListEqual(expected_depths, clf.get_depths())
+        for expected, computed in zip(
+            expected_cutpoints, clf.get_cut_points()
+        ):
+            for e, c in zip(expected, computed):
+                self.assertAlmostEqual(e, c, delta=self.delta)
+
+    def test_MinLength(self):
+        clf = FImdlp(min_length=75)
+        X, y = load_iris(return_X_y=True)
+        clf.fit(X, y)
+        expected_cutpoints = [
+            [5.45, 5.75],
+            [2.85, 3.35],
+            [2.45, 4.75],
+            [0.8, 1.75],
+        ]
+        expected_depths = [3, 2, 2, 2]
+        self.assertListEqual(expected_depths, clf.get_depths())
+        for expected, computed in zip(
+            expected_cutpoints, clf.get_cut_points()
+        ):
+            for e, c in zip(expected, computed):
+                self.assertAlmostEqual(e, c, delta=self.delta)
+
+    def test_MinLengthMaxDepth(self):
+        clf = FImdlp(min_length=75, max_depth=2)
+        X, y = load_iris(return_X_y=True)
+        clf.fit(X, y)
+        expected_cutpoints = [
+            [5.45, 5.75],
+            [2.85, 3.35],
+            [2.45, 4.75],
+            [0.8, 1.75],
+        ]
+        expected_depths = [2, 2, 2, 2]
+        self.assertListEqual(expected_depths, clf.get_depths())
+        for expected, computed in zip(
+            expected_cutpoints, clf.get_cut_points()
+        ):
+            for e, c in zip(expected, computed):
+                self.assertAlmostEqual(e, c, delta=self.delta)
+
+    def test_ArffFiles(self):
+        loader = CArffFiles()
+        loader.load(b"src/cppmdlp/tests/datasets/iris.arff")
+        X = loader.get_X()
+        y = loader.get_y()
+        expected = [
+            (b"sepallength", b"REAL"),
+            (b"sepalwidth", b"REAL"),
+            (b"petallength", b"REAL"),
+            (b"petalwidth", b"REAL"),
+        ]
+        self.assertListEqual(loader.get_attributes(), expected)
+        self.assertListEqual(y[:10], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        expected = [
+            b"5.1,3.5,1.4,0.2,Iris-setosa",
+            b"4.9,3.0,1.4,0.2,Iris-setosa",
+            b"4.7,3.2,1.3,0.2,Iris-setosa",
+            b"4.6,3.1,1.5,0.2,Iris-setosa",
+            b"5.0,3.6,1.4,0.2,Iris-setosa",
+            b"5.4,3.9,1.7,0.4,Iris-setosa",
+            b"4.6,3.4,1.4,0.3,Iris-setosa",
+            b"5.0,3.4,1.5,0.2,Iris-setosa",
+            b"4.4,2.9,1.4,0.2,Iris-setosa",
+            b"4.9,3.1,1.5,0.1,Iris-setosa",
+        ]
+        self.assertListEqual(loader.get_lines()[:10], expected)
+        expected_X = [
+            [5.0999999, 3.5, 1.39999998, 0.2],
+            [4.9000001, 3, 1.39999998, 0.2],
+            [4.69999981, 3.20000005, 1.29999995, 0.2],
+        ]
+        for computed, expected in zip(X[:3].tolist(), expected_X):
+            for c, e in zip(computed, expected):
+                self.assertAlmostEqual(c, e, delta=self.delta)

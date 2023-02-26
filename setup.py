@@ -15,6 +15,7 @@ setup(
                 "src/cppmdlp/CPPFImdlp.cpp",
                 "src/cppmdlp/Metrics.cpp",
                 "src/fimdlp/Factorize.cpp",
+                "src/fimdlp/ArffFiles.cpp",
             ],
             language="c++",
             include_dirs=["fimdlp"],

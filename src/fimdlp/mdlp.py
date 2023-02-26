@@ -10,8 +10,10 @@ from ._version import __version__
 
 
 class FImdlp(TransformerMixin, BaseEstimator):
-    def __init__(self, n_jobs=-1):
+    def __init__(self, n_jobs=-1, min_length=3, max_depth=1e6):
         self.n_jobs = n_jobs
+        self.min_length = min_length
+        self.max_depth = max_depth
 
     """Fayyad - Irani MDLP discretization algorithm based implementation.
 
@@ -105,7 +107,9 @@ class FImdlp(TransformerMixin, BaseEstimator):
 
     def _fit_discretizer(self, feature):
         if feature in self.features_:
-            self.discretizer_[feature] = CFImdlp()
+            self.discretizer_[feature] = CFImdlp(
+                min_length=self.min_length, max_depth=self.max_depth
+            )
             self.discretizer_[feature].fit(self.X_[:, feature], self.y_)
             self.cut_points_[feature] = self.discretizer_[
                 feature
@@ -242,3 +246,9 @@ class FImdlp(TransformerMixin, BaseEstimator):
         self.cut_points_[target] = self.discretizer_[target].get_cut_points()
         # return the discretized target variable with the new cut points
         return np.searchsorted(self.cut_points_[target], self.X_[:, target])
+
+    def get_depths(self):
+        res = [0] * self.n_features_in_
+        for feature in self.features_:
+            res[feature] = self.discretizer_[feature].get_depth()
+        return res
