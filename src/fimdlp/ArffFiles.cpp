@@ -40,11 +40,10 @@ vector<int>& ArffFiles::getY()
 void ArffFiles::load(string fileName, bool classLast)
 {
     ifstream file(fileName);
-    string keyword, attribute, type;
     if (file.is_open()) {
-        string line;
+        string line, keyword, attribute, type;
         while (getline(file, line)) {
-            if (line[0] == '%' || line.empty() || line == "\r" || line == " ") {
+            if (line.empty() || line[0] == '%' || line == "\r" || line == " ") {
                 continue;
             }
             if (line.find("@attribute") != string::npos || line.find("@ATTRIBUTE") != string::npos) {
@@ -79,7 +78,7 @@ void ArffFiles::generateDataset(bool classLast)
     X = vector<vector<float>>(attributes.size(), vector<float>(lines.size()));
     vector<string> yy = vector<string>(lines.size(), "");
     int labelIndex = classLast ? attributes.size() : 0;
-    for (int i = 0; i < lines.size(); i++) {
+    for (size_t i = 0; i < lines.size(); i++) {
         stringstream ss(lines[i]);
         string value;
         int pos = 0, xIndex = 0;

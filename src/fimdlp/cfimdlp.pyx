@@ -12,7 +12,7 @@ cdef extern from "../cppmdlp/CPPFImdlp.h" namespace "mdlp":
     ctypedef float precision_t
     cdef cppclass CPPFImdlp:
         CPPFImdlp() except + 
-        CPPFImdlp(size_t, int) except + 
+        CPPFImdlp(size_t, int, float) except + 
         CPPFImdlp& fit(vector[precision_t]&, vector[int]&)
         int get_depth()
         vector[precision_t] getCutPoints()
@@ -20,8 +20,8 @@ cdef extern from "../cppmdlp/CPPFImdlp.h" namespace "mdlp":
         
 cdef class CFImdlp:
     cdef CPPFImdlp *thisptr
-    def __cinit__(self, size_t min_length=3, int max_depth=INT_MAX):
-        self.thisptr = new CPPFImdlp(min_length, max_depth)
+    def __cinit__(self, size_t min_length=3, int max_depth=INT_MAX, float max_cuts=0):
+        self.thisptr = new CPPFImdlp(min_length, max_depth, max_cuts)
     def __dealloc__(self):
         del self.thisptr
     def fit(self, X, y):

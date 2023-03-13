@@ -7,8 +7,6 @@ from ..cppfimdlp import CFImdlp, factorize, CArffFiles
 from ..mdlp import FImdlp
 from .. import __version__
 
-# from .._version import __version__
-
 
 class FImdlpTest(unittest.TestCase):
     delta = 1e-6  # same tolerance as in C++ code
@@ -281,6 +279,24 @@ class FImdlpTest(unittest.TestCase):
             [0.8, 1.75],
         ]
         expected_depths = [2, 2, 2, 2]
+        self.assertListEqual(expected_depths, clf.get_depths())
+        for expected, computed in zip(
+            expected_cutpoints, clf.get_cut_points()
+        ):
+            for e, c in zip(expected, computed):
+                self.assertAlmostEqual(e, c, delta=self.delta)
+
+    def test_max_cuts(self):
+        clf = FImdlp(max_cuts=1)
+        X, y = load_iris(return_X_y=True)
+        clf.fit(X, y)
+        expected_cutpoints = [
+            [5.45],
+            [3.35],
+            [2.45],
+            [0.8],
+        ]
+        expected_depths = [1] * 4
         self.assertListEqual(expected_depths, clf.get_depths())
         for expected, computed in zip(
             expected_cutpoints, clf.get_cut_points()
