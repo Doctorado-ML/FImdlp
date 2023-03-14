@@ -9,13 +9,19 @@ from fimdlp.mdlp import FImdlp
 datasets = {
     "mfeat-factors": True,
     "iris": True,
+    "glass": True,
+    "liver-disorders": True,
     "letter": True,
     "kdd_JapaneseVowels": False,
 }
 
 ap = argparse.ArgumentParser()
 ap.add_argument(
-    "--alternative", dest="proposal", action="store_const", const=1
+    "--min_length", type=int, default=3, help="Minimum length of interval"
+)
+ap.add_argument("--max_depth", type=int, default=9999, help="Maximum depth")
+ap.add_argument(
+    "--max_cuts", type=float, default=0, help="Maximum number of cut points"
 )
 ap.add_argument("dataset", type=str, choices=datasets.keys())
 args = ap.parse_args()
@@ -30,7 +36,11 @@ class_name = df.columns.to_list()[class_column]
 X = df.drop(class_name, axis=1)
 y, _ = pd.factorize(df[class_name])
 X = X.to_numpy()
-test = FImdlp(algorithm=args.proposal if args.proposal is not None else 0)
+test = FImdlp(
+    min_length=args.min_length,
+    max_depth=args.max_depth,
+    max_cuts=args.max_cuts,
+)
 now = time.time()
 test.fit(X, y)
 fit_time = time.time()
