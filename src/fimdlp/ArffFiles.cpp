@@ -2,86 +2,92 @@
 #include <fstream>
 #include <sstream>
 #include <map>
-#include <iostream>
 
 using namespace std;
 
-ArffFiles::ArffFiles()
-{
-}
-vector<string> ArffFiles::getLines()
-{
+ArffFiles::ArffFiles() = default;
+
+vector<string> ArffFiles::getLines() const {
     return lines;
 }
-unsigned long int ArffFiles::getSize()
-{
+
+unsigned long int ArffFiles::getSize() const {
     return lines.size();
 }
-vector<pair<string, string>> ArffFiles::getAttributes()
-{
+
+vector<pair<string, string>> ArffFiles::getAttributes() const {
     return attributes;
 }
-string ArffFiles::getClassName()
-{
+
+string ArffFiles::getClassName() const {
     return className;
 }
-string ArffFiles::getClassType()
-{
+
+string ArffFiles::getClassType() const {
     return classType;
 }
-vector<vector<float>>& ArffFiles::getX()
-{
+
+vector<vector<float>> &ArffFiles::getX() {
     return X;
 }
-vector<int>& ArffFiles::getY()
-{
+
+vector<int> &ArffFiles::getY() {
     return y;
 }
-void ArffFiles::load(string fileName, bool classLast)
-{
+
+void ArffFiles::load(const string &fileName, bool classLast) {
     ifstream file(fileName);
-    if (file.is_open()) {
-        string line, keyword, attribute, type;
-        while (getline(file, line)) {
-            if (line.empty() || line[0] == '%' || line == "\r" || line == " ") {
-                continue;
-            }
-            if (line.find("@attribute") != string::npos || line.find("@ATTRIBUTE") != string::npos) {
-                stringstream ss(line);
-                ss >> keyword >> attribute >> type;
-                attributes.push_back({ attribute, type });
-                continue;
-            }
-            if (line[0] == '@') {
-                continue;
-            }
-            lines.push_back(line);
-        }
-        file.close();
-        if (attributes.empty())
-            throw invalid_argument("No attributes found");
-        if (classLast) {
-            className = get<0>(attributes.back());
-            classType = get<1>(attributes.back());
-            attributes.pop_back();
-        } else {
-            className = get<0>(attributes.front());
-            classType = get<1>(attributes.front());
-            attributes.erase(attributes.begin());
-        }
-        generateDataset(classLast);
-    } else
+    if (!file.is_open()) {
         throw invalid_argument("Unable to open file");
+    }
+    string line;
+    string keyword;
+    string attribute;
+    string type;
+    string type_w;
+    while (getline(file, line)) {
+        if (line.empty() || line[0] == '%' || line == "\r" || line == " ") {
+            continue;
+        }
+        if (line.find("@attribute") != string::npos || line.find("@ATTRIBUTE") != string::npos) {
+            stringstream ss(line);
+            ss >> keyword >> attribute;
+            type = "";
+            while (ss >> type_w)
+                type += type_w + " ";
+            attributes.emplace_back(attribute, type);
+            continue;
+        }
+        if (line[0] == '@') {
+            continue;
+        }
+        lines.push_back(line);
+    }
+    file.close();
+    if (attributes.empty())
+        throw invalid_argument("No attributes found");
+    if (classLast) {
+        className = get<0>(attributes.back());
+        classType = get<1>(attributes.back());
+        attributes.pop_back();
+    } else {
+        className = get<0>(attributes.front());
+        classType = get<1>(attributes.front());
+        attributes.erase(attributes.begin());
+    }
+    generateDataset(classLast);
+
 }
-void ArffFiles::generateDataset(bool classLast)
-{
+
+void ArffFiles::generateDataset(bool classLast) {
     X = vector<vector<float>>(attributes.size(), vector<float>(lines.size()));
-    vector<string> yy = vector<string>(lines.size(), "");
-    int labelIndex = classLast ? attributes.size() : 0;
+    auto yy = vector<string>(lines.size(), "");
+    int labelIndex = classLast ? static_cast<int>(attributes.size()) : 0;
     for (size_t i = 0; i < lines.size(); i++) {
         stringstream ss(lines[i]);
         string value;
-        int pos = 0, xIndex = 0;
+        int pos = 0;
+        int xIndex = 0;
         while (getline(ss, value, ',')) {
             if (pos++ == labelIndex) {
                 yy[i] = value;
@@ -92,20 +98,20 @@ void ArffFiles::generateDataset(bool classLast)
     }
     y = factorize(yy);
 }
-string ArffFiles::trim(const string& source)
-{
+
+string ArffFiles::trim(const string &source) {
     string s(source);
     s.erase(0, s.find_first_not_of(" \n\r\t"));
     s.erase(s.find_last_not_of(" \n\r\t") + 1);
     return s;
 }
-vector<int> ArffFiles::factorize(const vector<string>& labels_t)
-{
+
+vector<int> ArffFiles::factorize(const vector<string> &labels_t) {
     vector<int> yy;
     yy.reserve(labels_t.size());
     map<string, int> labelMap;
     int i = 0;
-    for (string label : labels_t) {
+    for (const string &label: labels_t) {
         if (labelMap.find(label) == labelMap.end()) {
             labelMap[label] = i++;
         }
