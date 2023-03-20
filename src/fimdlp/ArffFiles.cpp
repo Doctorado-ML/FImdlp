@@ -7,35 +7,43 @@ using namespace std;
 
 ArffFiles::ArffFiles() = default;
 
-vector<string> ArffFiles::getLines() const {
+vector<string> ArffFiles::getLines() const
+{
     return lines;
 }
 
-unsigned long int ArffFiles::getSize() const {
+unsigned long int ArffFiles::getSize() const
+{
     return lines.size();
 }
 
-vector<pair<string, string>> ArffFiles::getAttributes() const {
+vector<pair<string, string>> ArffFiles::getAttributes() const
+{
     return attributes;
 }
 
-string ArffFiles::getClassName() const {
+string ArffFiles::getClassName() const
+{
     return className;
 }
 
-string ArffFiles::getClassType() const {
+string ArffFiles::getClassType() const
+{
     return classType;
 }
 
-vector<vector<float>> &ArffFiles::getX() {
+vector<vector<float>>& ArffFiles::getX()
+{
     return X;
 }
 
-vector<int> &ArffFiles::getY() {
+vector<int>& ArffFiles::getY()
+{
     return y;
 }
 
-void ArffFiles::load(const string &fileName, bool classLast) {
+void ArffFiles::load(const string& fileName, bool classLast)
+{
     ifstream file(fileName);
     if (!file.is_open()) {
         throw invalid_argument("Unable to open file");
@@ -55,7 +63,7 @@ void ArffFiles::load(const string &fileName, bool classLast) {
             type = "";
             while (ss >> type_w)
                 type += type_w + " ";
-            attributes.emplace_back(attribute, type);
+            attributes.emplace_back(attribute, trim(type));
             continue;
         }
         if (line[0] == '@') {
@@ -79,7 +87,8 @@ void ArffFiles::load(const string &fileName, bool classLast) {
 
 }
 
-void ArffFiles::generateDataset(bool classLast) {
+void ArffFiles::generateDataset(bool classLast)
+{
     X = vector<vector<float>>(attributes.size(), vector<float>(lines.size()));
     auto yy = vector<string>(lines.size(), "");
     int labelIndex = classLast ? static_cast<int>(attributes.size()) : 0;
@@ -99,19 +108,21 @@ void ArffFiles::generateDataset(bool classLast) {
     y = factorize(yy);
 }
 
-string ArffFiles::trim(const string &source) {
+string ArffFiles::trim(const string& source)
+{
     string s(source);
     s.erase(0, s.find_first_not_of(" \n\r\t"));
     s.erase(s.find_last_not_of(" \n\r\t") + 1);
     return s;
 }
 
-vector<int> ArffFiles::factorize(const vector<string> &labels_t) {
+vector<int> ArffFiles::factorize(const vector<string>& labels_t)
+{
     vector<int> yy;
     yy.reserve(labels_t.size());
     map<string, int> labelMap;
     int i = 0;
-    for (const string &label: labels_t) {
+    for (const string& label : labels_t) {
         if (labelMap.find(label) == labelMap.end()) {
             labelMap[label] = i++;
         }
