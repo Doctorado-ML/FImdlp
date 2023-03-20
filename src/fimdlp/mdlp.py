@@ -98,7 +98,7 @@ class FImdlp(TransformerMixin, BaseEstimator):
         self._update_params(X, y)
         self.X_ = X
         self.y_ = y
-        self.efective_min_length = (
+        self.efective_min_length_ = (
             self.min_length
             if self.min_length > 1
             else int(self.min_length * X.shape[0])
@@ -114,7 +114,7 @@ class FImdlp(TransformerMixin, BaseEstimator):
     def _fit_discretizer(self, feature):
         if feature in self.features_:
             self.discretizer_[feature] = CFImdlp(
-                min_length=self.efective_min_length,
+                min_length=self.efective_min_length_,
                 max_depth=self.max_depth,
                 max_cuts=self.max_cuts,
             )
