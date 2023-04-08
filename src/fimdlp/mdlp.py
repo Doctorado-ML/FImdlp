@@ -6,8 +6,6 @@ from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from joblib import Parallel, delayed
 from ._version import __version__
 
-# from ._version import __version__
-
 
 class FImdlp(TransformerMixin, BaseEstimator):
     def __init__(self, n_jobs=-1, min_length=3, max_depth=1e6, max_cuts=0):
@@ -24,6 +22,12 @@ class FImdlp(TransformerMixin, BaseEstimator):
         The number of jobs to run in parallel. :meth:`fit` and
         :meth:`transform`, are parallelized over the features. ``-1`` means
         using all cores available.
+    min_length: int, default=3
+        The minimum length of an interval to be considered to be discretized.
+    max_depth: int, default=1e6
+        The maximum depth of the discretization process.
+    max_cuts: float, default=0
+        The maximum number of cut points to be computed for each feature. 
 
     Attributes
     ----------
@@ -109,6 +113,8 @@ class FImdlp(TransformerMixin, BaseEstimator):
             delayed(self._fit_discretizer)(feature)
             for feature in range(self.n_features_in_)
         )
+        # target of every feature. Start with -1 => y (see join_fit)
+        self.target_ = [-1] * self.n_features_in_
         return self
 
     def _fit_discretizer(self, feature):
@@ -244,11 +250,12 @@ class FImdlp(TransformerMixin, BaseEstimator):
                 f"Target {target} not in range [0, {self.n_features_in_})"
             )
         if target in features:
-            raise ValueError("Target cannot in features to join")
+            raise ValueError("Target cannot be in features to join")
         y_join = [
             f"{str(item_y)}{''.join([str(x) for x in items_x])}".encode()
             for item_y, items_x in zip(self.y_, data[:, features])
         ]
+        self.target_[target] = features + [-1]
         self.y_join_ = y_join
         self.discretizer_[target].fit(self.X_[:, target], factorize(y_join))
         self.cut_points_[target] = self.discretizer_[target].get_cut_points()

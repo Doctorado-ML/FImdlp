@@ -196,7 +196,7 @@ class FImdlpTest(unittest.TestCase):
             clf.join_fit([0, 2], 2, x)
         self.assertEqual(
             str(exception.exception),
-            "Target cannot in features to join",
+            "Target cannot be in features to join",
         )
 
     def test_factorize(self):
@@ -208,6 +208,16 @@ class FImdlpTest(unittest.TestCase):
         clf = FImdlp()
         computed = clf.factorize(y)
         self.assertListEqual([0, 1, 1, 2, 3], computed)
+
+    def test_join_fit_info(self):
+        clf = FImdlp()
+        X, y = load_iris(return_X_y=True)
+        clf.fit(X, y)
+        clf.join_fit([0, 2], 1, X)
+        clf.join_fit([0, 3], 2, X)
+        clf.join_fit([1, 2], 3, X)
+        expected = [-1, [0, 2, -1], [0, 3, -1], [1, 2, -1]]
+        self.assertListEqual(expected, clf.target_)
 
     @staticmethod
     def test_sklearn_transformer():
