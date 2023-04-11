@@ -27,7 +27,7 @@ class FImdlp(TransformerMixin, BaseEstimator):
     max_depth: int, default=1e6
         The maximum depth of the discretization process.
     max_cuts: float, default=0
-        The maximum number of cut points to be computed for each feature. 
+        The maximum number of cut points to be computed for each feature.
 
     Attributes
     ----------
@@ -113,6 +113,8 @@ class FImdlp(TransformerMixin, BaseEstimator):
             delayed(self._fit_discretizer)(feature)
             for feature in range(self.n_features_in_)
         )
+        # target of every feature. Start with -1 => y (see join_fit)
+        self.target_ = [-1] * self.n_features_in_
         # target of every feature. Start with -1 => y (see join_fit)
         self.target_ = [-1] * self.n_features_in_
         return self
@@ -251,10 +253,12 @@ class FImdlp(TransformerMixin, BaseEstimator):
             )
         if target in features:
             raise ValueError("Target cannot be in features to join")
+            raise ValueError("Target cannot be in features to join")
         y_join = [
             f"{str(item_y)}{''.join([str(x) for x in items_x])}".encode()
             for item_y, items_x in zip(self.y_, data[:, features])
         ]
+        self.target_[target] = features + [-1]
         self.target_[target] = features + [-1]
         self.y_join_ = y_join
         self.discretizer_[target].fit(self.X_[:, target], factorize(y_join))
