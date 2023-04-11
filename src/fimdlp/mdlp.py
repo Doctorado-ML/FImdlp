@@ -115,8 +115,6 @@ class FImdlp(TransformerMixin, BaseEstimator):
         )
         # target of every feature. Start with -1 => y (see join_fit)
         self.target_ = [-1] * self.n_features_in_
-        # target of every feature. Start with -1 => y (see join_fit)
-        self.target_ = [-1] * self.n_features_in_
         return self
 
     def _fit_discretizer(self, feature):
@@ -253,12 +251,10 @@ class FImdlp(TransformerMixin, BaseEstimator):
             )
         if target in features:
             raise ValueError("Target cannot be in features to join")
-            raise ValueError("Target cannot be in features to join")
         y_join = [
             f"{str(item_y)}{''.join([str(x) for x in items_x])}".encode()
             for item_y, items_x in zip(self.y_, data[:, features])
         ]
-        self.target_[target] = features + [-1]
         self.target_[target] = features + [-1]
         self.y_join_ = y_join
         self.discretizer_[target].fit(self.X_[:, target], factorize(y_join))
