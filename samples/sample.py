@@ -44,10 +44,10 @@ test = FImdlp(
 now = time.time()
 test.fit(X, y)
 fit_time = time.time()
-print("Fitting: ", fit_time - now)
+print(f"Fitting ....: {fit_time - now:7.5f} seconds")
 now = time.time()
 Xt = test.transform(X)
-print("Transforming: ", time.time() - now)
+print(f"Transforming: {time.time() - now:7.5f} seconds")
 print(test.get_cut_points())
 clf = RandomForestClassifier(random_state=0)
 print(

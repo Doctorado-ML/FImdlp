@@ -33,9 +33,12 @@ python samples/sample.py -h # for more options
 
 ```bash
 cd samples
-mkdir build
+cmake -B build
 cd build
-cmake ..
-make
-./sample iris
+make sample
+./sample -f iris
+./sample -h
 ```
+
+### Based on
+[https://github.com/rmontanana/mdlp](https://github.com/rmontanana/mdlp)
