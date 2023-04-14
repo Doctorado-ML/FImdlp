@@ -5,6 +5,7 @@ from scipy.io import arff
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from fimdlp.mdlp import FImdlp
+from fimdlp.cppfimdlp import CArffFiles
 
 datasets = {
     "mfeat-factors": True,
@@ -29,13 +30,15 @@ relative = "" if os.path.isdir("src") else ".."
 file_name = os.path.join(
     relative, "src", "cppmdlp", "tests", "datasets", args.dataset
 )
-data = arff.loadarff(file_name + ".arff")
-df = pd.DataFrame(data[0])
-class_column = -1 if datasets[args.dataset] else 0
-class_name = df.columns.to_list()[class_column]
-X = df.drop(class_name, axis=1)
-y, _ = pd.factorize(df[class_name])
-X = X.to_numpy()
+arff = CArffFiles()
+arff.load(bytes(f"{file_name}.arff", "utf-8"))
+X = arff.get_X()
+y = arff.get_y()
+attributes = arff.get_attributes()
+attributes = [x[0].decode() for x in attributes]
+df = pd.DataFrame(X, columns=attributes)
+class_name = arff.get_class_name().decode()
+df[class_name] = y
 test = FImdlp(
     min_length=args.min_length,
     max_depth=args.max_depth,
@@ -48,7 +51,13 @@ print(f"Fitting ....: {fit_time - now:7.5f} seconds")
 now = time.time()
 Xt = test.transform(X)
 print(f"Transforming: {time.time() - now:7.5f} seconds")
-print(test.get_cut_points())
+cut_points = test.get_cut_points()
+for i, cuts in enumerate(cut_points):
+    print(f"Cut points for feature {attributes[i]}: {cuts}")
+    print(f"Min: {min(X[:, i]):6.4f} Max: {max(X[:, i]):6.4f}")
+num_cuts = sum([len(x) for x in cut_points])
+print(f"Total cut points ...: {num_cuts}")
+print(f"Total feature states: {num_cuts + len(attributes)}")
 clf = RandomForestClassifier(random_state=0)
 print(
     "Random Forest score with discretized data: ", clf.fit(Xt, y).score(Xt, y)
