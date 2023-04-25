@@ -40,6 +40,7 @@ audit: ## Audit pip
 version:
 	@echo "Current Python version .: $(shell python --version)"
 	@echo "Current FImdlp version .: $(shell python -c "from fimdlp import _version; print(_version.__version__)")"
+	@echo "Current mdlp version ...: $(shell python -c "from fimdlp.cppfimdlp import CFImdlp; print(CFImdlp().get_version().decode())")"
 	@echo "Installed FImdlp version: $(shell pip show fimdlp | grep Version | cut -d' ' -f2)"
 
 help: ## Show help message

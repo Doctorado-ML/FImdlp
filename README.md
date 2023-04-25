@@ -25,7 +25,7 @@ git clone --recurse-submodules https://github.com/doctorado-ml/FImdlp.git
 ```bash
 pip install -e .
 python samples/sample.py iris  
-python samples/sample.py iris --alternative
+python samples/sample.py iris -c 2
 python samples/sample.py -h # for more options
 ```
 
@@ -33,9 +33,12 @@ python samples/sample.py -h # for more options
 
 ```bash
 cd samples
-mkdir build
+cmake -B build
 cd build
-cmake ..
 make
-./sample iris
+./sample -f iris -c 2
+./sample -h
 ```
+
+### Based on
+[https://github.com/rmontanana/mdlp](https://github.com/rmontanana/mdlp)

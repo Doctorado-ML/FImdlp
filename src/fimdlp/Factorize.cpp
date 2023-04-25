@@ -7,7 +7,7 @@ namespace utils {
         yy.reserve(labels_t.size());
         map<string, int> labelMap;
         int i = 0;
-        for (string label : labels_t) {
+        for (const string& label : labels_t) {
             if (labelMap.find(label) == labelMap.end()) {
                 labelMap[label] = i++;
             }

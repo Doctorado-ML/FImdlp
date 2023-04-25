@@ -6,12 +6,13 @@ from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from joblib import Parallel, delayed
 from ._version import __version__
 
-# from ._version import __version__
-
 
 class FImdlp(TransformerMixin, BaseEstimator):
-    def __init__(self, n_jobs=-1):
+    def __init__(self, n_jobs=-1, min_length=3, max_depth=1e6, max_cuts=0):
         self.n_jobs = n_jobs
+        self.min_length = min_length
+        self.max_depth = max_depth
+        self.max_cuts = max_cuts
 
     """Fayyad - Irani MDLP discretization algorithm based implementation.
 
@@ -21,6 +22,12 @@ class FImdlp(TransformerMixin, BaseEstimator):
         The number of jobs to run in parallel. :meth:`fit` and
         :meth:`transform`, are parallelized over the features. ``-1`` means
         using all cores available.
+    min_length: int, default=3
+        The minimum length of an interval to be considered to be discretized.
+    max_depth: int, default=1e6
+        The maximum depth of the discretization process.
+    max_cuts: float, default=0
+        The maximum number of cut points to be computed for each feature.
 
     Attributes
     ----------
@@ -95,17 +102,28 @@ class FImdlp(TransformerMixin, BaseEstimator):
         self._update_params(X, y)
         self.X_ = X
         self.y_ = y
+        self.efective_min_length_ = (
+            self.min_length
+            if self.min_length > 1
+            else int(self.min_length * X.shape[0])
+        )
         self.discretizer_ = [None] * self.n_features_in_
         self.cut_points_ = [None] * self.n_features_in_
         Parallel(n_jobs=self.n_jobs, prefer="threads")(
             delayed(self._fit_discretizer)(feature)
             for feature in range(self.n_features_in_)
         )
+        # target of every feature. Start with -1 => y (see join_fit)
+        self.target_ = [-1] * self.n_features_in_
         return self
 
     def _fit_discretizer(self, feature):
         if feature in self.features_:
-            self.discretizer_[feature] = CFImdlp()
+            self.discretizer_[feature] = CFImdlp(
+                min_length=self.efective_min_length_,
+                max_depth=self.max_depth,
+                max_cuts=self.max_cuts,
+            )
             self.discretizer_[feature].fit(self.X_[:, feature], self.y_)
             self.cut_points_[feature] = self.discretizer_[
                 feature
@@ -232,13 +250,21 @@ class FImdlp(TransformerMixin, BaseEstimator):
                 f"Target {target} not in range [0, {self.n_features_in_})"
             )
         if target in features:
-            raise ValueError("Target cannot in features to join")
+            raise ValueError("Target cannot be in features to join")
         y_join = [
             f"{str(item_y)}{''.join([str(x) for x in items_x])}".encode()
             for item_y, items_x in zip(self.y_, data[:, features])
         ]
+        # Store in target_ the features used with class to discretize target
+        self.target_[target] = features + [-1]
         self.y_join_ = y_join
         self.discretizer_[target].fit(self.X_[:, target], factorize(y_join))
         self.cut_points_[target] = self.discretizer_[target].get_cut_points()
         # return the discretized target variable with the new cut points
         return np.searchsorted(self.cut_points_[target], self.X_[:, target])
+
+    def get_depths(self):
+        res = [0] * self.n_features_in_
+        for feature in self.features_:
+            res[feature] = self.discretizer_[feature].get_depth()
+        return res
