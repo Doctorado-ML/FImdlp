@@ -38,6 +38,7 @@ classifiers = [
 
 [project.urls]
 Home = "https://github.com/doctorado-ml/FImdlp"
+Base = "https://github.com/rmontanana/mdlp"
 
 [tool.black]
 line-length = 79

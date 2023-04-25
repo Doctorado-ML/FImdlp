@@ -255,6 +255,7 @@ class FImdlp(TransformerMixin, BaseEstimator):
             f"{str(item_y)}{''.join([str(x) for x in items_x])}".encode()
             for item_y, items_x in zip(self.y_, data[:, features])
         ]
+        # Store in target_ the features used with class to discretize target
         self.target_[target] = features + [-1]
         self.y_join_ = y_join
         self.discretizer_[target].fit(self.X_[:, target], factorize(y_join))
