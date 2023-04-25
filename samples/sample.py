@@ -1,7 +1,6 @@
 import time
 import argparse
 import os
-from scipy.io import arff
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from fimdlp.mdlp import FImdlp
@@ -18,11 +17,21 @@ datasets = {
 
 ap = argparse.ArgumentParser()
 ap.add_argument(
-    "--min_length", type=int, default=3, help="Minimum length of interval"
+    "-n",
+    "--min_length",
+    type=int,
+    default=3,
+    help="Minimum length of interval",
 )
-ap.add_argument("--max_depth", type=int, default=9999, help="Maximum depth")
 ap.add_argument(
-    "--max_cuts", type=float, default=0, help="Maximum number of cut points"
+    "-m", "--max_depth", type=int, default=9999, help="Maximum depth"
+)
+ap.add_argument(
+    "-c",
+    "--max_cuts",
+    type=float,
+    default=0,
+    help="Maximum number of cut points",
 )
 ap.add_argument("dataset", type=str, choices=datasets.keys())
 args = ap.parse_args()
