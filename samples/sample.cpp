@@ -28,7 +28,7 @@ void usage(const char* path)
     cout << "  -p, --path[=FILENAME]\t folder where the arff dataset is located, default " << PATH << endl;
     cout << "  -m, --max_depth=INT\t max_depth pased to discretizer. Default = MAX_INT" << endl;
     cout
-        << "  -c, --max_cutpoints=FLOAT\t percentage of lines expressed in decimal or integer number or cut points. Default = 0 = any"
+        << "  -c, --max_cutpoints=FLOAT\t percentage of lines expressed in decimal or integer number or cut points. Default = 0 -> any"
         << endl;
     cout << "  -n, --min_length=INT\t interval min_length pased to discretizer. Default = 3" << endl;
 }
@@ -40,7 +40,7 @@ tuple<string, string, int, int, float> parse_arguments(int argc, char** argv)
     int max_depth = numeric_limits<int>::max();
     int min_length = 3;
     float max_cutpoints = 0;
-    const option long_options[] = {
+    const vector<struct option> long_options = {
             {"help",          no_argument,       nullptr, 'h'},
             {"file",          required_argument, nullptr, 'f'},
             {"path",          required_argument, nullptr, 'p'},
@@ -50,7 +50,7 @@ tuple<string, string, int, int, float> parse_arguments(int argc, char** argv)
             {nullptr,         no_argument,       nullptr, 0}
     };
     while (true) {
-        const auto c = getopt_long(argc, argv, "hf:p:m:c:n:", long_options, nullptr);
+        const auto c = getopt_long(argc, argv, "hf:p:m:c:n:", long_options.data(), nullptr);
         if (c == -1)
             break;
         switch (c) {
@@ -94,8 +94,8 @@ void process_file(const string& path, const string& file_name, bool class_last, 
     ArffFiles file;
 
     file.load(path + file_name + ".arff", class_last);
-    auto attributes = file.getAttributes();
-    auto items = file.getSize();
+    const auto attributes = file.getAttributes();
+    const auto items = file.getSize();
     cout << "Number of lines: " << items << endl;
     cout << "Attributes: " << endl;
     for (auto attribute : attributes) {
@@ -113,17 +113,21 @@ void process_file(const string& path, const string& file_name, bool class_last, 
         cout << y[i] << endl;
     }
     auto test = mdlp::CPPFImdlp(min_length, max_depth, max_cutpoints);
-    auto total = 0;
+    size_t total = 0;
     for (auto i = 0; i < attributes.size(); i++) {
         auto min_max = minmax_element(X[i].begin(), X[i].end());
-        cout << "Cut points for " << get<0>(attributes[i]) << endl;
-        cout << "Min: " << *min_max.first << " Max: " << *min_max.second << endl;
-        cout << "--------------------------" << setprecision(3) << endl;
+        cout << "Cut points for feature " << get<0>(attributes[i]) << ": [" << setprecision(3);
         test.fit(X[i], y);
-        for (auto item : test.getCutPoints()) {
-            cout << item << endl;
+        auto cut_points = test.getCutPoints();
+        for (auto item : cut_points) {
+            cout << item;
+            if (item != cut_points.back())
+                cout << ", ";
         }
         total += test.getCutPoints().size();
+        cout << "]" << endl;
+        cout << "Min: " << *min_max.first << " Max: " << *min_max.second << endl;
+        cout << "--------------------------" << endl;
     }
     cout << "Total cut points ...: " << total << endl;
     cout << "Total feature states: " << total + attributes.size() << endl;
@@ -143,7 +147,7 @@ void process_all_files(const map<string, bool>& datasets, const string& path, in
         vector<samples_t>& X = file.getX();
         labels_t& y = file.getY();
         size_t timing = 0;
-        int cut_points = 0;
+        size_t cut_points = 0;
         for (auto i = 0; i < attributes.size(); i++) {
             auto test = mdlp::CPPFImdlp(min_length, max_depth, max_cutpoints);
             std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -152,7 +156,7 @@ void process_all_files(const map<string, bool>& datasets, const string& path, in
             timing += std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
             cut_points += test.getCutPoints().size();
         }
-        printf("%-20s %4lu %4d %8zu\n", dataset.first.c_str(), attributes.size(), cut_points, timing);
+        printf("%-20s %4lu %4zu %8zu\n", dataset.first.c_str(), attributes.size(), cut_points, timing);
     }
 }
 

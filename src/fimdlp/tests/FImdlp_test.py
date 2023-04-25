@@ -18,6 +18,13 @@ class FImdlpTest(unittest.TestCase):
             f"{__version__}({CFImdlp().get_version().decode()})",
         )
 
+    def test_minimum_mdlp_version(self):
+        mdlp_version = tuple(
+            int(c) for c in CFImdlp().get_version().decode().split(".")[0:3]
+        )
+        minimum_mdlp_version = (1, 1, 2)
+        self.assertTrue(mdlp_version >= minimum_mdlp_version)
+
     def test_init(self):
         clf = FImdlp()
         self.assertEqual(-1, clf.n_jobs)
@@ -312,11 +319,11 @@ class FImdlpTest(unittest.TestCase):
         clf.fit(X, y)
         expected_cutpoints = [
             [5.45],
-            [3.35],
+            [2.85],
             [2.45],
             [0.8],
         ]
-        expected_depths = [1] * 4
+        expected_depths = [3, 5, 4, 3]
         self.assertListEqual(expected_depths, clf.get_depths())
         for expected, computed in zip(
             expected_cutpoints, clf.get_cut_points()
