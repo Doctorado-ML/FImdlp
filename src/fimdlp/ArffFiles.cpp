@@ -63,7 +63,7 @@ void ArffFiles::load(const string& fileName, bool classLast)
             type = "";
             while (ss >> type_w)
                 type += type_w + " ";
-            attributes.emplace_back(attribute, trim(type));
+            attributes.emplace_back(trim(attribute), trim(type));
             continue;
         }
         if (line[0] == '@') {
@@ -111,8 +111,8 @@ void ArffFiles::generateDataset(bool classLast)
 string ArffFiles::trim(const string& source)
 {
     string s(source);
-    s.erase(0, s.find_first_not_of(" \n\r\t"));
-    s.erase(s.find_last_not_of(" \n\r\t") + 1);
+    s.erase(0, s.find_first_not_of(" '\n\r\t"));
+    s.erase(s.find_last_not_of(" '\n\r\t") + 1);
     return s;
 }
 
