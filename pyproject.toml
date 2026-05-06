@@ -6,7 +6,6 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 #packages = ["fimdlp"]
 package-dir = { "" = "src" }
-license-files = ["LICENSE"]
 
 [tool.setuptools.dynamic]
 version = { attr = "fimdlp.__version__" }
@@ -14,19 +13,21 @@ version = { attr = "fimdlp.__version__" }
 [project]
 name = "FImdlp"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
     { name = "Ricardo Montañana", email = "ricardo.montanana@alu.uclm.es" },
 ]
 dynamic = ['version']
 dependencies = ["scikit-learn>=1.8.0"]
 requires-python = ">=3.9"
+
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
     "Topic :: Software Development",
     "Topic :: Scientific/Engineering",
-    "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
