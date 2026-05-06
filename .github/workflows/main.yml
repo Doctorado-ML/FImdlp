@@ -12,41 +12,40 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        python: ["3.10"]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.9", "3.10", "3.11", "3.12"]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
       - name: Install dependencies
         run: |
-          pip install -q --upgrade pip
-          pip install -q scikit-learn cython
-          pip install -q coverage black flake8 codacy-coverage
+          python -m pip install --upgrade pip
+          pip install build cython
       - name: Build and install
         run: |
           make install
-      - name: Lint
+      - name: Lint with black
         run: |
+          pip install black
           black --check --diff src
-          flake8 --count --per-file-ignores="__init__.py:F401" src
-      - name: Tests
+      - name: Lint with flake8
         run: |
+          pip install flake8
+          flake8 --count --per-file-ignores="__init__.py:F401" src
+      - name: Test
+        run: |
+          pip install coverage
           coverage run -m unittest discover -v -s src
           coverage xml
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
-      - name: Run codacy-coverage-reporter
-        if: runner.os == 'Linux'
-        uses: codacy/codacy-coverage-reporter-action@master
-        with:
-          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          coverage-reports: coverage.xml
+        if: matrix.python == '3.10' && matrix.os == 'ubuntu-latest'
