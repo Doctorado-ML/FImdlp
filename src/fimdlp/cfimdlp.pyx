@@ -8,16 +8,17 @@ import numpy as np
 
 cdef extern from "limits.h":
     cdef int INT_MAX
-cdef extern from "../cppmdlp/CPPFImdlp.h" namespace "mdlp":
+cdef extern from "CPPFImdlp.h" namespace "mdlp":
     ctypedef float precision_t
     cdef cppclass CPPFImdlp:
-        CPPFImdlp() except + 
-        CPPFImdlp(size_t, int, float) except + 
-        CPPFImdlp& fit(vector[precision_t]&, vector[int]&)
+        CPPFImdlp() except +
+        CPPFImdlp(size_t, int, float) except +
+        void fit(vector[precision_t]&, vector[int]&) except +
+        vector[int]& transform(const vector[precision_t]&) except +
         int get_depth()
         vector[precision_t] getCutPoints()
         string version()
-        
+
 cdef class CFImdlp:
     cdef CPPFImdlp *thisptr
     def __cinit__(self, size_t min_length=3, int max_depth=INT_MAX, float max_cuts=0):
@@ -25,10 +26,16 @@ cdef class CFImdlp:
     def __dealloc__(self):
         del self.thisptr
     def fit(self, X, y):
-        self.thisptr.fit(X, y)
+        cdef vector[precision_t] xv = np.asarray(X, dtype=np.float32).tolist()
+        cdef vector[int] yv = np.asarray(y, dtype=np.int32).tolist()
+        self.thisptr.fit(xv, yv)
         return self
+    def transform(self, X):
+        cdef vector[precision_t] xv = np.asarray(X, dtype=np.float32).tolist()
+        cdef vector[int] result = self.thisptr.transform(xv)
+        return np.asarray(result, dtype=np.int32)
     def get_cut_points(self):
-        return self.thisptr.getCutPoints()
+        return list(self.thisptr.getCutPoints())
     def get_version(self):
         return self.thisptr.version()
     def get_depth(self):

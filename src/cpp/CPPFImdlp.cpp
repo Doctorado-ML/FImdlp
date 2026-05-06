@@ -14,7 +14,6 @@
 namespace mdlp {
 
     CPPFImdlp::CPPFImdlp(size_t min_length_, int max_depth_, float proposed) :
-        Discretizer(),
         min_length(min_length_),
         max_depth(max_depth_),
         proposed_cuts(proposed)
@@ -29,8 +28,6 @@ namespace mdlp {
         if (proposed < 0.0f) {
             throw std::invalid_argument("proposed_cuts must be non-negative");
         }
-
-        direction = bound_dir_t::RIGHT;
     }
 
     size_t CPPFImdlp::compute_max_num_cut_points() const
@@ -232,6 +229,26 @@ namespace mdlp {
             begin = end;
         }
         cutPoints.erase(cutPoints.begin() + static_cast<long>(maxEntropyIdx));
+    }
+
+    labels_t& CPPFImdlp::transform(const samples_t& data)
+    {
+        if (data.empty()) {
+            throw std::invalid_argument("Data for transformation cannot be empty");
+        }
+        if (cutPoints.size() < 2) {
+            throw std::runtime_error("Discretizer not fitted yet or no valid cut points found");
+        }
+        discretizedData.clear();
+        discretizedData.reserve(data.size());
+        // First and last cut points are sentinels (vmin/vmax) added in fit()
+        auto first = cutPoints.begin() + 1;
+        auto last = cutPoints.end() - 1;
+        for (const precision_t& item : data) {
+            auto pos = std::upper_bound(first, last, item);
+            discretizedData.push_back(static_cast<label_t>(pos - first));
+        }
+        return discretizedData;
     }
 
 }

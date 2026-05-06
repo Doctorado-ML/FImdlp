@@ -35,8 +35,6 @@ class FImdlp(TransformerMixin, BaseEstimator):
         The number of features of the data passed to :meth:`fit`.
     discretizer_ : list
         The list of discretizers, one for each feature.
-    cut_points_ : list
-        The list of cut points for each feature.
     X_ : array, shape (n_samples, n_features)
         the samples used to fit
     y_ : array, shape(n_samples,)
@@ -108,7 +106,8 @@ class FImdlp(TransformerMixin, BaseEstimator):
             else int(self.min_length * X.shape[0])
         )
         self.discretizer_ = [None] * self.n_features_in_
-        self.cut_points_ = [None] * self.n_features_in_
+        # Lazy cache: filled on first call to get_cut_points / get_states_feature
+        self._cut_points_cache_ = [None] * self.n_features_in_
         Parallel(n_jobs=self.n_jobs, prefer="threads")(
             delayed(self._fit_discretizer)(feature)
             for feature in range(self.n_features_in_)
@@ -125,16 +124,12 @@ class FImdlp(TransformerMixin, BaseEstimator):
                 max_cuts=self.max_cuts,
             )
             self.discretizer_[feature].fit(self.X_[:, feature], self.y_)
-            self.cut_points_[feature] = self.discretizer_[
-                feature
-            ].get_cut_points()
-        else:
-            self.discretizer_[feature] = None
-            self.cut_points_[feature] = []
+        # cut points are pulled lazily; ensure cache slot is empty
+        self._cut_points_cache_[feature] = None
 
     def _discretize_feature(self, feature, X, result):
         if feature in self.features_:
-            result[:, feature] = np.searchsorted(self.cut_points_[feature], X)
+            result[:, feature] = self.discretizer_[feature].transform(X)
         else:
             result[:, feature] = X
 
@@ -185,6 +180,27 @@ class FImdlp(TransformerMixin, BaseEstimator):
         """
         return factorize(yy)
 
+    def _load_cut_points(self, feature):
+        """Lazily fetch cut points for a feature from the C++ object.
+
+        The C++ layer stores cut points as ``[vmin, c1, ..., cn, vmax]``; the
+        first and last entries are sentinels used by ``transform`` and are
+        stripped here so the public API exposes only the intermediate cuts
+        (backwards-compatible with the pre-2.x layout).
+        """
+        cached = self._cut_points_cache_[feature]
+        if cached is not None:
+            return cached
+        disc = self.discretizer_[feature]
+        if disc is None:
+            self._cut_points_cache_[feature] = []
+            return self._cut_points_cache_[feature]
+        raw = disc.get_cut_points()
+        self._cut_points_cache_[feature] = (
+            list(raw[1:-1]) if len(raw) >= 2 else []
+        )
+        return self._cut_points_cache_[feature]
+
     def get_cut_points(self):
         """Get the cut points for each feature.
         Returns
@@ -192,10 +208,11 @@ class FImdlp(TransformerMixin, BaseEstimator):
         result: list
             The list of cut points for each feature.
         """
-        result = []
-        for feature in range(self.n_features_in_):
-            result.append(self.cut_points_[feature])
-        return result
+        check_is_fitted(self, "n_features_in_")
+        return [
+            self._load_cut_points(feature)
+            for feature in range(self.n_features_in_)
+        ]
 
     def get_states_feature(self, feature):
         """Return the states a feature can take
@@ -211,7 +228,7 @@ class FImdlp(TransformerMixin, BaseEstimator):
             states of the feature
         """
         if feature in self.features_:
-            return list(range(len(self.cut_points_[feature]) + 1))
+            return list(range(len(self._load_cut_points(feature)) + 1))
         return None
 
     def join_fit(self, features, target, data):
@@ -259,9 +276,9 @@ class FImdlp(TransformerMixin, BaseEstimator):
         self.target_[target] = features + [-1]
         self.y_join_ = y_join
         self.discretizer_[target].fit(self.X_[:, target], factorize(y_join))
-        self.cut_points_[target] = self.discretizer_[target].get_cut_points()
-        # return the discretized target variable with the new cut points
-        return np.searchsorted(self.cut_points_[target], self.X_[:, target])
+        # invalidate lazy cache for the re-fitted feature
+        self._cut_points_cache_[target] = None
+        return self.discretizer_[target].transform(self.X_[:, target])
 
     def get_depths(self):
         res = [0] * self.n_features_in_

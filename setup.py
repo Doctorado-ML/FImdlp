@@ -12,15 +12,15 @@ setup(
             name="fimdlp.cppfimdlp",
             sources=[
                 "src/fimdlp/cfimdlp.pyx",
-                "src/cppmdlp/CPPFImdlp.cpp",
-                "src/cppmdlp/Metrics.cpp",
+                "src/cpp/CPPFImdlp.cpp",
+                "src/cpp/Metrics.cpp",
                 "src/fimdlp/Factorize.cpp",
                 "src/fimdlp/ArffFiles.cpp",
             ],
             language="c++",
-            include_dirs=["fimdlp"],
+            include_dirs=["src/cpp", "src/fimdlp"],
             extra_compile_args=[
-                "-std=c++11",
+                "-std=c++17",
             ],
         ),
     ]
