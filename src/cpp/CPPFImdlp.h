@@ -22,7 +22,9 @@ namespace mdlp {
         void fit(samples_t& X_, labels_t& y_);
         labels_t& transform(const samples_t& data);
         inline cutPoints_t getCutPoints() const { return cutPoints; };
+        inline void setCutPoints(const cutPoints_t& cp) { cutPoints = cp; };
         inline int get_depth() const { return depth; };
+        inline void set_depth(int d) { depth = d; };
         static inline std::string version() { return "2.1.3"; };
     protected:
         size_t min_length = 3;

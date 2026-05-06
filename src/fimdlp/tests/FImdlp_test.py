@@ -237,17 +237,7 @@ class FImdlpTest(unittest.TestCase):
         self.assertListEqual(expected, clf.target_)
 
     def test_sklearn_transformer(self):
-        sk_version = tuple(int(p) for p in sklearn.__version__.split(".")[:2])
-        if sk_version >= (1, 6):
-            # sklearn 1.6+ removed `generate_only` and switched the tags API
-            # from `_more_tags` to `__sklearn_tags__`. Migrating is out of
-            # scope for this change; skip until the wrapper is updated.
-            self.skipTest(
-                "check_estimator API changed in sklearn 1.6; "
-                "needs __sklearn_tags__ migration"
-            )
-        for check, test in check_estimator(FImdlp(), generate_only=True):
-            test(check)
+        check_estimator(FImdlp())
 
     def test_states_feature(self):
         clf = FImdlp()

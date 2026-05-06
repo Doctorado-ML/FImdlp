@@ -2,7 +2,10 @@ import numpy as np
 from .cppfimdlp import CFImdlp, factorize
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.multiclass import unique_labels
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from sklearn.utils.validation import (
+    check_is_fitted,
+    validate_data,
+)
 from joblib import Parallel, delayed
 from ._version import __version__
 
@@ -43,12 +46,15 @@ class FImdlp(TransformerMixin, BaseEstimator):
         the list of features to be discretized
     """
 
-    def _more_tags(self):
-        return {"preserves_dtype": [np.int32], "requires_y": True}
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.target_tags.required = True
+        tags.transformer_tags.preserves_dtype = ["int32"]
+        return tags
 
     def _check_args(self, X, y, expected_args, kwargs):
-        # Check that X and y have correct shape
-        X, y = check_X_y(X, y)
+        # validate_data sets n_features_in_ and runs the standard X/y checks
+        X, y = validate_data(self, X, y)
         # Default values
         self.features_ = [i for i in range(X.shape[1])]
         for key, value in kwargs.items():
@@ -146,14 +152,9 @@ class FImdlp(TransformerMixin, BaseEstimator):
         """
         # Check is fit had been called
         check_is_fitted(self, "n_features_in_")
-        # Input validation
-        X = check_array(X)
-        # Check that the input is of the same shape as the one passed
-        # during fit.
-        if X.shape[1] != self.n_features_in_:
-            raise ValueError(
-                "Shape of input is different from what was seen in `fit`"
-            )
+        # validate_data with reset=False enforces the same n_features_in_
+        # as seen during fit and emits the canonical sklearn error message.
+        X = validate_data(self, X, reset=False)
         if len(self.features_) == self.n_features_in_:
             result = np.zeros_like(X, dtype=np.int32) - 1
         else:

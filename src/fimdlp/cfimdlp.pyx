@@ -16,13 +16,30 @@ cdef extern from "CPPFImdlp.h" namespace "mdlp":
         void fit(vector[precision_t]&, vector[int]&) except +
         vector[int]& transform(const vector[precision_t]&) except +
         int get_depth()
+        void set_depth(int)
         vector[precision_t] getCutPoints()
+        void setCutPoints(const vector[precision_t]&)
         string version()
+
+
+def _restore_cfimdlp(min_length, max_depth, max_cuts, cut_points, depth):
+    """Pickle helper: rebuild a CFImdlp and restore its post-fit state."""
+    obj = CFImdlp(min_length=min_length, max_depth=max_depth,
+                  max_cuts=max_cuts)
+    obj._restore(cut_points, depth)
+    return obj
+
 
 cdef class CFImdlp:
     cdef CPPFImdlp *thisptr
+    cdef readonly size_t min_length
+    cdef readonly int max_depth
+    cdef readonly float max_cuts
     def __cinit__(self, size_t min_length=3, int max_depth=INT_MAX, float max_cuts=0):
         self.thisptr = new CPPFImdlp(min_length, max_depth, max_cuts)
+        self.min_length = min_length
+        self.max_depth = max_depth
+        self.max_cuts = max_cuts
     def __dealloc__(self):
         del self.thisptr
     def fit(self, X, y):
@@ -40,8 +57,18 @@ cdef class CFImdlp:
         return self.thisptr.version()
     def get_depth(self):
         return self.thisptr.get_depth()
+    def _restore(self, cut_points, int depth):
+        cdef vector[precision_t] cp = list(cut_points)
+        self.thisptr.setCutPoints(cp)
+        self.thisptr.set_depth(depth)
     def __reduce__(self):
-        return (CFImdlp, ())
+        return (_restore_cfimdlp, (
+            self.min_length,
+            self.max_depth,
+            self.max_cuts,
+            list(self.thisptr.getCutPoints()),
+            self.thisptr.get_depth(),
+        ))
 
 cdef extern from "Factorize.h" namespace "utils":
     vector[int] cppFactorize(vector[string] &input_vector)
