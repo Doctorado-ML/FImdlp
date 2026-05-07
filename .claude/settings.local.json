@@ -19,7 +19,10 @@
       "Bash(make install *)",
       "Bash(twine check *)",
       "Bash(pip show *)",
-      "Bash(make clean *)"
+      "Bash(make clean *)",
+      "Bash(make help *)",
+      "Bash(make sample_py)",
+      "Bash(make sample_cpp)"
     ]
   }
 }
