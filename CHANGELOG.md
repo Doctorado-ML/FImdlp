@@ -19,8 +19,9 @@ supported set. No runtime code changes.
   base, CPython 3.11–3.14, Linux x86_64, macOS arm64+x86_64 with
   `MACOSX_DEPLOYMENT_TARGET=11.0`); musllinux, PyPy and 32-bit
   targets skipped.
-- New Make targets `sdist`, `wheels`, `build-clean`, `publish-test`
-  and an updated `build`/`publish` flow (see *Changed*).
+- New Make targets `sdist`, `wheel`, `wheels`, `build-clean`,
+  `publish-test` and an updated `build`/`publish` flow (see
+  *Changed*).
 - `cibuildwheel` added to the `[dev]` optional dependency group.
 - Manual GitHub Actions workflow `.github/workflows/wheels.yml`
   (`workflow_dispatch` only) that builds Linux + macOS wheels and an
@@ -35,12 +36,29 @@ supported set. No runtime code changes.
 - Linux wheels are now produced as `manylinux2014_x86_64` instead of
   the unportable `linux_x86_64` tag PyPI rejected on the previous
   upload attempt.
-- Release flow split into independent steps: `make build` produces
-  sdist + wheels for the current platform via `cibuildwheel`, and
-  `make publish` only runs `twine check`/`upload` on the contents of
-  `dist/` (no longer rebuilds). This lets you drop wheels downloaded
-  from the manual GH Actions workflow into `dist/` before publishing
-  without having them wiped.
+- Release flow split into independent steps:
+  - On **macOS**, `make build` produces the sdist plus a wheel for
+    the current Python via `python -m build` (with
+    `MACOSX_DEPLOYMENT_TARGET=11.0`). This is enough for local
+    testing and for publishing the wheel matching your interpreter,
+    without forcing python.org installs of every supported Python
+    version.
+  - On **Linux**, `make build` produces only the sdist; release
+    wheels come from the `wheels.yml` GH Actions workflow, since
+    locally-built `linux_x86_64` wheels are not portable enough for
+    PyPI.
+  - For full multi-version coverage on either platform, run the
+    GH Actions workflow and drop the artifacts into `dist/` before
+    `make publish`.
+  - `make publish` only runs `twine check`/`upload` on the contents
+    of `dist/` (no longer rebuilds), so artifacts dropped in `dist/`
+    survive the publish step.
+- New `make wheel` (singular) target builds a single non-portable
+  wheel for the current Python via `python -m build --wheel`, useful
+  for local install/testing but not for PyPI uploads.
+- `cibuildwheel` `skip` config no longer lists `pp*` (PyPy is not
+  enabled by default in cibuildwheel 3.x, so the selector emitted a
+  warning).
 - `make wheels` autodetects the available container engine on Linux
   (Docker preferred, Podman as fallback) and exports
   `CIBW_CONTAINER_ENGINE` accordingly; aborts early with a clear

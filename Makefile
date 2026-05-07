@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
-.PHONY: audit build build-clean clean coverage deps help install lint publish publish-test push sdist test version wheels
+.PHONY: audit build build-clean clean coverage deps help install lint publish publish-test push sdist test version wheel wheels
 
 clean: ## Remove build artifacts and caches
 	rm -rf build dist src/*.egg-info .pytest_cache .coverage htmlcov
@@ -31,7 +31,14 @@ build-clean:  ## Remove dist/ and build/ before producing release artifacts
 sdist:  ## Build the source distribution into dist/
 	python -m build --sdist
 
-wheels:  ## Build manylinux/macOS wheels for the current platform via cibuildwheel
+wheel:  ## Build a single wheel for the current Python (local testing only, NOT for PyPI)
+	python -m build --wheel
+
+wheels:  ## Build release wheels via cibuildwheel (advanced — see notes below)
+	@# Linux: needs Docker or Podman. macOS: needs python.org framework
+	@# installs of CPython 3.11–3.14 (cibuildwheel won't auto-install
+	@# system-wide outside CI). For most workflows, prefer the
+	@# 'Build wheels' GitHub Actions workflow instead — see README.
 	@command -v cibuildwheel >/dev/null 2>&1 || pip install --upgrade cibuildwheel
 	@if [ "$$(uname)" = "Linux" ]; then \
 		if command -v docker >/dev/null 2>&1; then \
@@ -47,10 +54,22 @@ wheels:  ## Build manylinux/macOS wheels for the current platform via cibuildwhe
 		python -m cibuildwheel --output-dir dist; \
 	fi
 
-build:  ## Clean and build sdist + wheels for the current platform
+build:  ## Clean and build sdist + wheel for the current Python (macOS); sdist only on Linux
 	make build-clean
-	make sdist
-	make wheels
+	@if [ "$$(uname)" = "Darwin" ]; then \
+		MACOSX_DEPLOYMENT_TARGET=11.0 python -m build; \
+		echo ""; \
+		echo "Sdist + macOS wheel for the current Python ready in dist/."; \
+		echo "For Linux wheels and other macOS Python versions, run the"; \
+		echo "'Build wheels' GitHub Actions workflow and drop the downloaded"; \
+		echo "artifacts into dist/ before 'make publish'."; \
+	else \
+		python -m build --sdist; \
+		echo ""; \
+		echo "Sdist ready in dist/."; \
+		echo "For release wheels, run the 'Build wheels' GitHub Actions workflow"; \
+		echo "and drop the downloaded artifacts into dist/ before 'make publish'."; \
+	fi
 
 install:  ## Install in editable mode
 	make clean
