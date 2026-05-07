@@ -38,11 +38,23 @@ build has been cleaned up for PyPI publishing.
   constructor args, the cut points and the recursion depth, and a helper
   rebuilds the state on unpickle. Required for
   `sklearn.utils.estimator_checks.check_estimator`.
-- New Make targets: `deps`, `publish`, `sample_py`, `sample_cpp`.
-  `make help` prints the full list.
-- Optional dependency group `[dev]` (`build`, `twine`, `pip-audit`,
-  `black`, `flake8`, `coverage`).
+- New Make targets: `deps`, `sdist`, `wheels`, `build`, `build-clean`,
+  `publish`, `publish-test`, `sample_py`, `sample_cpp`. `make help`
+  prints the full list.
+- Optional dependency group `[dev]` (`build`, `cibuildwheel`, `twine`,
+  `pip-audit`, `black`, `flake8`, `coverage`).
 - Sdist (`*.tar.gz`) is now produced alongside the wheel.
+- `cibuildwheel` configuration in `pyproject.toml` (manylinux2014 base,
+  CPython 3.11–3.14, Linux x86_64, macOS arm64+x86_64 with
+  `MACOSX_DEPLOYMENT_TARGET=11.0`); musllinux, PyPy and 32-bit targets
+  skipped.
+- Python 3.14 added to the supported versions: classifier in
+  `pyproject.toml`, cibuildwheel build matrix and the CI test matrix
+  in `.github/workflows/main.yml`.
+- Manual GitHub Actions workflow `.github/workflows/wheels.yml`
+  (`workflow_dispatch` only) that builds Linux + macOS wheels and the
+  sdist and uploads them as artifacts. **No automatic publishing to
+  PyPI** — release remains a manual `make publish` step.
 - Seven new tests covering the C++ transform path, sentinel exposure,
   lazy cache semantics, cache invalidation on `join_fit`, deterministic
   re-`transform`, out-of-range value clamping and state/cut consistency.
@@ -82,6 +94,14 @@ build has been cleaned up for PyPI publishing.
   - PyPI classifier bumped to `Development Status :: 5 - Production/Stable`.
 - `make build` no longer wipes the editable extension; `make test`
   rebuilds the extension automatically if the `.so` is missing.
+- Release flow split into independent steps: `make build` produces
+  sdist + wheels for the current platform via cibuildwheel, and `make
+  publish` only runs `twine check`/`upload` on the contents of `dist/`
+  (no longer rebuilds). This lets you drop wheels downloaded from the
+  manual GH Actions workflow into `dist/` before publishing without
+  having them wiped.
+- Linux wheels are now produced as `manylinux2014_x86_64` instead of
+  the unportable `linux_x86_64` tag PyPI rejects.
 - README rewritten: PyPI install instructions, dev workflow, full Make
   target table, Python and C++ sample usage with options.
 - CI: dropped Windows from the test matrix; CodeQL action upgraded to

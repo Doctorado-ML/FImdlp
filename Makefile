@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
-.PHONY: audit build clean coverage deps help install lint publish push test version
+.PHONY: audit build build-clean clean coverage deps help install lint publish publish-test push sdist test version wheels
 
 clean: ## Remove build artifacts and caches
 	rm -rf build dist src/*.egg-info .pytest_cache .coverage htmlcov
@@ -25,18 +25,37 @@ lint:  ## Format and lint sources
 push:  ## Push code with tags
 	git push && git push --tags
 
-build:  ## Build wheel and sdist (does not touch the editable extension)
+build-clean:  ## Remove dist/ and build/ before producing release artifacts
 	rm -rf dist build src/*.egg-info
-	python -m build
+
+sdist:  ## Build the source distribution into dist/
+	python -m build --sdist
+
+wheels:  ## Build manylinux/macOS wheels for the current platform via cibuildwheel
+	@command -v cibuildwheel >/dev/null 2>&1 || pip install --upgrade cibuildwheel
+	@if [ "$$(uname)" = "Linux" ] && ! command -v docker >/dev/null 2>&1; then \
+		echo "ERROR: cibuildwheel needs Docker on Linux to produce manylinux wheels." >&2; exit 1; \
+	fi
+	python -m cibuildwheel --output-dir dist
+
+build:  ## Clean and build sdist + wheels for the current platform
+	make build-clean
+	make sdist
+	make wheels
 
 install:  ## Install in editable mode
 	make clean
 	pip install -e .
 
-publish:  ## Build and upload to PyPI
-	make build
+publish:  ## Upload everything in dist/ to PyPI (build first, or drop in CI artifacts)
+	@ls dist/*.whl >/dev/null 2>&1 || { echo "ERROR: no wheels in dist/. Run 'make build' or add CI artifacts first." >&2; exit 1; }
 	twine check dist/*
 	twine upload dist/*
+
+publish-test:  ## Upload everything in dist/ to TestPyPI (manual)
+	@ls dist/*.whl >/dev/null 2>&1 || { echo "ERROR: no wheels in dist/. Run 'make build' or add CI artifacts first." >&2; exit 1; }
+	twine check dist/*
+	twine upload --repository testpypi dist/*
 
 sample_cpp: ## Build and execute c++ sample
 	cd samples && rm -rf build 2>/dev/null && cmake -B build -S . && cmake --build build && cd build && ./sample -f iris
