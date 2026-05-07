@@ -78,7 +78,7 @@ install:  ## Install in editable mode
 publish:  ## Upload everything in dist/ to PyPI (build first, or drop in CI artifacts)
 	@ls dist/*.whl >/dev/null 2>&1 || { echo "ERROR: no wheels in dist/. Run 'make build' or add CI artifacts first." >&2; exit 1; }
 	twine check dist/*
-	twine upload dist/*
+	twine upload --skip-existing dist/*
 
 publish-test:  ## Upload everything in dist/ to TestPyPI (manual)
 	@ls dist/*.whl >/dev/null 2>&1 || { echo "ERROR: no wheels in dist/. Run 'make build' or add CI artifacts first." >&2; exit 1; }
