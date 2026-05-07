@@ -33,10 +33,19 @@ sdist:  ## Build the source distribution into dist/
 
 wheels:  ## Build manylinux/macOS wheels for the current platform via cibuildwheel
 	@command -v cibuildwheel >/dev/null 2>&1 || pip install --upgrade cibuildwheel
-	@if [ "$$(uname)" = "Linux" ] && ! command -v docker >/dev/null 2>&1; then \
-		echo "ERROR: cibuildwheel needs Docker on Linux to produce manylinux wheels." >&2; exit 1; \
+	@if [ "$$(uname)" = "Linux" ]; then \
+		if command -v docker >/dev/null 2>&1; then \
+			engine=docker; \
+		elif command -v podman >/dev/null 2>&1; then \
+			engine=podman; \
+		else \
+			echo "ERROR: cibuildwheel needs Docker or Podman on Linux to produce manylinux wheels." >&2; exit 1; \
+		fi; \
+		echo "Using container engine: $$engine"; \
+		CIBW_CONTAINER_ENGINE=$$engine python -m cibuildwheel --output-dir dist; \
+	else \
+		python -m cibuildwheel --output-dir dist; \
 	fi
-	python -m cibuildwheel --output-dir dist
 
 build:  ## Clean and build sdist + wheels for the current platform
 	make build-clean

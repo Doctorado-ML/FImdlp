@@ -102,6 +102,10 @@ build has been cleaned up for PyPI publishing.
   having them wiped.
 - Linux wheels are now produced as `manylinux2014_x86_64` instead of
   the unportable `linux_x86_64` tag PyPI rejects.
+- `make wheels` autodetects the available container engine on Linux
+  (Docker preferred, Podman as fallback) and exports
+  `CIBW_CONTAINER_ENGINE` accordingly; aborts early with a clear
+  message if neither is installed.
 - README rewritten: PyPI install instructions, dev workflow, full Make
   target table, Python and C++ sample usage with options.
 - CI: dropped Windows from the test matrix; CodeQL action upgraded to
