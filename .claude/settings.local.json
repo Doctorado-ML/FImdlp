@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(rm -f src/fimdlp/cfimdlp.cpp src/fimdlp/*.so)",
+      "Bash(rm -rf build dist src/*.egg-info)",
+      "Bash(pip install *)",
+      "Bash(python -c \"from fimdlp.cppfimdlp import CFImdlp; print\\(CFImdlp\\(\\).get_version\\(\\)\\)\")",
+      "Bash(python -m unittest discover -v -s src)",
+      "Bash(make test *)",
+      "Bash(python -c \"from sklearn.utils._tags import Tags, TargetTags, TransformerTags; help\\(Tags\\); print\\('---'\\); help\\(TargetTags\\); print\\('---'\\); help\\(TransformerTags\\)\")",
+      "Bash(python *)",
+      "Bash(make build *)",
+      "Bash(pip list *)",
+      "Bash(unzip -l dist/fimdlp-1.0.0-cp314-cp314-macosx_12_0_arm64.whl)",
+      "Bash(unzip -p dist/fimdlp-1.0.0-cp314-cp314-macosx_12_0_arm64.whl fimdlp-1.0.0.dist-info/top_level.txt)",
+      "Bash(unzip -p dist/fimdlp-1.0.0-cp314-cp314-macosx_12_0_arm64.whl fimdlp-1.0.0.dist-info/METADATA)",
+      "Bash(tar tzf *)",
+      "Bash(make install *)",
+      "Bash(twine check *)",
+      "Bash(pip show *)",
+      "Bash(make clean *)"
+    ]
+  }
+}

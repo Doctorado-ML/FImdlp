@@ -1,11 +1,18 @@
 # pyproject.toml
 [build-system]
-requires = ["setuptools", "cython", "wheel"]
+requires = ["setuptools>=64", "cython>=3.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-#packages = ["fimdlp"]
 package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["fimdlp*"]
+exclude = ["fimdlp.tests*"]
+
+[tool.setuptools.exclude-package-data]
+"*" = ["*.pyx", "*.cpp", "*.h"]
 
 [tool.setuptools.dynamic]
 version = { attr = "fimdlp.__version__" }
@@ -23,7 +30,7 @@ dependencies = ["scikit-learn>=1.8.0"]
 requires-python = ">=3.11"
 
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
     "Topic :: Software Development",
@@ -35,6 +42,16 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+]
+
+[project.optional-dependencies]
+dev = [
+    "build",
+    "twine",
+    "pip-audit",
+    "black",
+    "flake8",
+    "coverage",
 ]
 
 [project.urls]

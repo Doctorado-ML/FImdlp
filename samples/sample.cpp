@@ -5,13 +5,13 @@
 #include <algorithm>
 #include <cstring>
 #include <getopt.h>
-#include "../src/cppmdlp/CPPFImdlp.h"
-#include "../src/cppmdlp/tests/ArffFiles.h"
+#include "CPPFImdlp.h"
+#include "ArffFiles.h"
 
 using namespace std;
 using namespace mdlp;
 
-const string PATH = "../../src/cppmdlp/tests/datasets/";
+const string PATH = "../../src/fimdlp/tests/datasets/";
 
 /* print a description of all supported options */
 void usage(const char* path)

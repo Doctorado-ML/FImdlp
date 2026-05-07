@@ -37,7 +37,7 @@ ap.add_argument("dataset", type=str, choices=datasets.keys())
 args = ap.parse_args()
 relative = "" if os.path.isdir("src") else ".."
 file_name = os.path.join(
-    relative, "src", "cppmdlp", "tests", "datasets", args.dataset
+    relative, "src", "fimdlp", "tests", "datasets", args.dataset
 )
 arff = CArffFiles()
 arff.load(bytes(f"{file_name}.arff", "utf-8"))

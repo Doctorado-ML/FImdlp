@@ -42,14 +42,21 @@ class FImdlpTest(unittest.TestCase):
         self.assertEqual(clf.n_features_in_, 4)
         self.assertTrue(np.array_equal(X, clf.X_))
         self.assertTrue(np.array_equal(y, clf.y_))
-        expected = [
+        # cut points include vmin/vmax bounds plus the intermediate cuts
+        X32 = X.astype(np.float32)
+        intermediate = [
             [5.45, 5.75],
             [2.75, 2.85, 2.95, 3.05, 3.35],
             [2.45, 4.75, 5.05],
             [0.8, 1.75],
         ]
+        expected = [
+            [float(X32[:, f].min())] + intermediate[f] + [float(X32[:, f].max())]
+            for f in range(4)
+        ]
         computed = clf.get_cut_points()
         for item_computed, item_expected in zip(computed, expected):
+            self.assertEqual(len(item_computed), len(item_expected))
             for x_, y_ in zip(item_computed, item_expected):
                 self.assertAlmostEqual(x_, y_, delta=self.delta)
         self.assertListEqual([0, 1, 2, 3], clf.features_)
@@ -73,11 +80,12 @@ class FImdlpTest(unittest.TestCase):
 
     def test_fit_features(self):
         clf = FImdlp(n_jobs=-1)
-        # Two samples doesn't have enough information to split
+        # Two samples doesn't have enough information to split. Fitted
+        # features still expose [vmin, vmax]; unfit features expose [].
         clf.fit([[1, -2], [3, 4]], [1, 2], features=[0])
-        self.assertListEqual(clf.get_cut_points(), [[], []])
+        self.assertListEqual(clf.get_cut_points(), [[1.0, 3.0], []])
         clf.fit([[1, -2], [3, 4], [5, 6]], [1, 2, 2], features=[0])
-        self.assertListEqual(clf.get_cut_points(), [[2], []])
+        self.assertListEqual(clf.get_cut_points(), [[1.0, 2.0, 5.0], []])
         res = clf.transform([[1, -2], [3, 4]])
         self.assertListEqual(res.tolist(), [[0, -2], [1, 4]])
         X, y = load_iris(return_X_y=True)
@@ -257,77 +265,83 @@ class FImdlpTest(unittest.TestCase):
         clf.fit(X, y)
         self.assertIsNone(clf.get_states_feature(4))
 
+    def _wrap_with_bounds(self, X, intermediate):
+        """Prepend min and append max (as float32) to each per-feature
+        list of intermediate cut points so the expected list matches the
+        public API, which now exposes the full [vmin, ..., vmax] vector."""
+        X32 = X.astype(np.float32)
+        return [
+            [float(X32[:, f].min())] + intermediate[f]
+            + [float(X32[:, f].max())]
+            for f in range(len(intermediate))
+        ]
+
+    def _assert_cuts_almost_equal(self, expected, computed):
+        self.assertEqual(len(expected), len(computed))
+        for exp_row, comp_row in zip(expected, computed):
+            self.assertEqual(len(exp_row), len(comp_row))
+            for e, c in zip(exp_row, comp_row):
+                self.assertAlmostEqual(e, c, delta=self.delta)
+
     def test_MaxDepth(self):
         clf = FImdlp(max_depth=1)
         X, y = load_iris(return_X_y=True)
         clf.fit(X, y)
-        expected_cutpoints = [
-            [5.45],
-            [3.35],
-            [2.45],
-            [0.8],
-        ]
-        expected_depths = [1] * 4
-        self.assertListEqual(expected_depths, clf.get_depths())
-        for expected, computed in zip(
+        expected_cutpoints = self._wrap_with_bounds(
+            X, [[5.45], [3.35], [2.45], [0.8]]
+        )
+        self.assertListEqual([1] * 4, clf.get_depths())
+        self._assert_cuts_almost_equal(
             expected_cutpoints, clf.get_cut_points()
-        ):
-            for e, c in zip(expected, computed):
-                self.assertAlmostEqual(e, c, delta=self.delta)
+        )
 
     def test_MinLength(self):
         clf = FImdlp(min_length=75)
         X, y = load_iris(return_X_y=True)
         clf.fit(X, y)
-        expected_cutpoints = [
-            [5.45, 5.75],
-            [2.85, 3.35],
-            [2.45, 4.75],
-            [0.8, 1.75],
-        ]
-        expected_depths = [3, 2, 2, 2]
-        self.assertListEqual(expected_depths, clf.get_depths())
-        for expected, computed in zip(
+        expected_cutpoints = self._wrap_with_bounds(
+            X,
+            [
+                [5.45, 5.75],
+                [2.85, 3.35],
+                [2.45, 4.75],
+                [0.8, 1.75],
+            ],
+        )
+        self.assertListEqual([3, 2, 2, 2], clf.get_depths())
+        self._assert_cuts_almost_equal(
             expected_cutpoints, clf.get_cut_points()
-        ):
-            for e, c in zip(expected, computed):
-                self.assertAlmostEqual(e, c, delta=self.delta)
+        )
 
     def test_MinLengthMaxDepth(self):
         clf = FImdlp(min_length=75, max_depth=2)
         X, y = load_iris(return_X_y=True)
         clf.fit(X, y)
-        expected_cutpoints = [
-            [5.45, 5.75],
-            [2.85, 3.35],
-            [2.45, 4.75],
-            [0.8, 1.75],
-        ]
-        expected_depths = [2, 2, 2, 2]
-        self.assertListEqual(expected_depths, clf.get_depths())
-        for expected, computed in zip(
+        expected_cutpoints = self._wrap_with_bounds(
+            X,
+            [
+                [5.45, 5.75],
+                [2.85, 3.35],
+                [2.45, 4.75],
+                [0.8, 1.75],
+            ],
+        )
+        self.assertListEqual([2, 2, 2, 2], clf.get_depths())
+        self._assert_cuts_almost_equal(
             expected_cutpoints, clf.get_cut_points()
-        ):
-            for e, c in zip(expected, computed):
-                self.assertAlmostEqual(e, c, delta=self.delta)
+        )
 
     def test_max_cuts(self):
         clf = FImdlp(max_cuts=1)
         X, y = load_iris(return_X_y=True)
         clf.fit(X, y)
-        expected_cutpoints = [
-            [5.45],
-            [2.85],
-            [2.45],
-            [0.8],
-        ]
-        expected_depths = [3, 5, 4, 3]
-        self.assertListEqual(expected_depths, clf.get_depths())
-        for expected, computed in zip(
+        expected_cutpoints = self._wrap_with_bounds(
+            X, [[5.45], [2.85], [2.45], [0.8]]
+        )
+        self.assertListEqual([3, 5, 4, 3], clf.get_depths())
+        self._assert_cuts_almost_equal(
             expected_cutpoints, clf.get_cut_points()
-        ):
-            for e, c in zip(expected, computed):
-                self.assertAlmostEqual(e, c, delta=self.delta)
+        )
 
     def test_ArffFiles(self):
         loader = CArffFiles()
@@ -366,32 +380,30 @@ class FImdlpTest(unittest.TestCase):
 
     def test_cpp_transform_used(self):
         """C++ transform must yield the same labels as np.searchsorted on the
-        intermediate cut points (cross-check that sentinel stripping is right)."""
+        intermediate cut points (i.e. excluding the bounds at index 0/-1)."""
         X, y = load_iris(return_X_y=True)
         clf = FImdlp().fit(X, y)
         cut_points = clf.get_cut_points()
         expected = np.zeros_like(X, dtype=np.int32)
         for f in range(X.shape[1]):
-            expected[:, f] = np.searchsorted(cut_points[f], X[:, f])
+            expected[:, f] = np.searchsorted(cut_points[f][1:-1], X[:, f])
         computed = clf.transform(X)
         self.assertTrue(np.array_equal(expected, computed))
 
-    def test_get_cut_points_strips_sentinels(self):
-        """Public get_cut_points must drop the [vmin, ..., vmax] sentinels
-        that the C++ layer adds in v2.x."""
+    def test_get_cut_points_includes_sentinels(self):
+        """Public get_cut_points exposes [vmin, c1, ..., cn, vmax] verbatim."""
         X, y = load_iris(return_X_y=True)
         clf = FImdlp().fit(X, y)
         raw = clf.discretizer_[0].get_cut_points()
         py_cuts = clf.get_cut_points()[0]
-        self.assertEqual(len(py_cuts), len(raw) - 2)
+        self.assertEqual(py_cuts, list(raw))
+        X32 = X[:, 0].astype(np.float32)
         self.assertAlmostEqual(
-            raw[0], float(np.min(X[:, 0])), delta=self.delta
+            py_cuts[0], float(X32.min()), delta=self.delta
         )
         self.assertAlmostEqual(
-            raw[-1], float(np.max(X[:, 0])), delta=self.delta
+            py_cuts[-1], float(X32.max()), delta=self.delta
         )
-        for a, b in zip(py_cuts, list(raw[1:-1])):
-            self.assertAlmostEqual(a, b, delta=self.delta)
 
     def test_cut_points_cached_lazily(self):
         """Cut-point cache is empty after fit and populated on first read."""
@@ -425,24 +437,28 @@ class FImdlpTest(unittest.TestCase):
         self.assertEqual(a.shape, X.shape)
 
     def test_transform_out_of_range_values(self):
-        """Values outside [min, max] should map to bin 0 / len(cuts)."""
+        """Values outside [min, max] map to bin 0 / number-of-intermediate-cuts.
+        With sentinels, n_intermediate = len(cuts) - 2."""
         X = np.array(
             [[0.0], [1.0], [2.0], [3.0], [4.0], [5.0], [6.0], [7.0]]
         )
         y = np.array([0, 0, 0, 0, 1, 1, 1, 1])
         clf = FImdlp(min_length=3).fit(X, y)
         cuts = clf.get_cut_points()[0]
-        self.assertGreater(len(cuts), 0)
+        n_intermediate = len(cuts) - 2
+        self.assertGreater(n_intermediate, 0)
         extreme = np.array([[-1e6], [1e6]])
         out = clf.transform(extreme)
         self.assertEqual(int(out[0, 0]), 0)
-        self.assertEqual(int(out[1, 0]), len(cuts))
+        self.assertEqual(int(out[1, 0]), n_intermediate)
 
     def test_states_feature_consistent_with_cuts(self):
+        """With sentinels included, n_states = max(1, len(cuts) - 1)."""
         X, y = load_iris(return_X_y=True)
         clf = FImdlp().fit(X, y)
         for f in range(4):
+            cuts = clf.get_cut_points()[f]
             self.assertEqual(
                 len(clf.get_states_feature(f)),
-                len(clf.get_cut_points()[f]) + 1,
+                max(1, len(cuts) - 1),
             )

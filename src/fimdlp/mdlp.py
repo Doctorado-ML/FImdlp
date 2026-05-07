@@ -184,10 +184,9 @@ class FImdlp(TransformerMixin, BaseEstimator):
     def _load_cut_points(self, feature):
         """Lazily fetch cut points for a feature from the C++ object.
 
-        The C++ layer stores cut points as ``[vmin, c1, ..., cn, vmax]``; the
-        first and last entries are sentinels used by ``transform`` and are
-        stripped here so the public API exposes only the intermediate cuts
-        (backwards-compatible with the pre-2.x layout).
+        The C++ layer stores cut points as ``[vmin, c1, ..., cn, vmax]``;
+        both vmin/vmax bounds and the intermediate cuts are exposed as-is
+        through this Python API.
         """
         cached = self._cut_points_cache_[feature]
         if cached is not None:
@@ -196,10 +195,7 @@ class FImdlp(TransformerMixin, BaseEstimator):
         if disc is None:
             self._cut_points_cache_[feature] = []
             return self._cut_points_cache_[feature]
-        raw = disc.get_cut_points()
-        self._cut_points_cache_[feature] = (
-            list(raw[1:-1]) if len(raw) >= 2 else []
-        )
+        self._cut_points_cache_[feature] = list(disc.get_cut_points())
         return self._cut_points_cache_[feature]
 
     def get_cut_points(self):
@@ -229,7 +225,10 @@ class FImdlp(TransformerMixin, BaseEstimator):
             states of the feature
         """
         if feature in self.features_:
-            return list(range(len(self._load_cut_points(feature)) + 1))
+            # cut points are [vmin, c1, ..., cn, vmax]; the n intermediate
+            # cuts produce n+1 bins, i.e. len(cuts) - 1 states.
+            cuts = self._load_cut_points(feature)
+            return list(range(max(1, len(cuts) - 1)))
         return None
 
     def join_fit(self, features, target, data):

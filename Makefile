@@ -1,39 +1,53 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
-.PHONY: coverage deps help lint push test build install audit
+.PHONY: audit build clean coverage deps help install lint publish push test version
 
-clean: ## Clean up
-	rm -rf build dist src/*.egg-info
-	if [ -f src/fimdlp/cfimdlp.cpp ]; then rm src/fimdlp/cfimdlp.cpp; fi;
-	for file in src/fimdlp/*.so; do \
-		if [ -f $${file} ]; then rm $${file}; fi; \
-	done
+clean: ## Remove build artifacts and caches
+	rm -rf build dist src/*.egg-info .pytest_cache .coverage htmlcov
+	find . -type d -name __pycache__ -prune -exec rm -rf {} +
+	rm -f src/fimdlp/cfimdlp.cpp src/fimdlp/*.so
 
-test:
+deps:  ## Install development dependencies
+	pip install -e ".[dev]"
+
+test:  ## Run unit tests with coverage
+	@ls src/fimdlp/cppfimdlp*.so >/dev/null 2>&1 || pip install -e . --quiet --no-deps
 	coverage run -m unittest discover -v -s src
-coverage:
+
+coverage:  ## Run tests and print coverage report
 	make test
 	coverage report -m
 
-lint:  ## Lint and static-check
+lint:  ## Format and lint sources
 	black src
 	flake8 --per-file-ignores="__init__.py:F401" src
 
 push:  ## Push code with tags
 	git push && git push --tags
 
-build:  ## Build package
-	make clean
-	python -m build --wheel
+build:  ## Build wheel and sdist (does not touch the editable extension)
+	rm -rf dist build src/*.egg-info
+	python -m build
 
-install:  ## Build extension
+install:  ## Install in editable mode
 	make clean
 	pip install -e .
 
-audit: ## Audit pip
+publish:  ## Build and upload to PyPI
+	make build
+	twine check dist/*
+	twine upload dist/*
+
+sample_cpp: ## Build and execute c++ sample
+	cd samples && rm -rf build 2>/dev/null && cmake -B build -S . && cmake --build build && cd build && ./sample -f iris
+
+sample_py: ## Execute python sample
+	cd samples && python sample.py iris
+
+audit: ## Audit installed packages for known vulnerabilities
 	pip-audit
 
-version:
+version:  ## Show current versions
 	@echo "Current Python version .: $(shell python --version)"
 	@echo "Current FImdlp version .: $(shell python -c "from fimdlp import _version; print(_version.__version__)")"
 	@echo "Current mdlp version ...: $(shell python -c "from fimdlp.cppfimdlp import CFImdlp; print(CFImdlp().get_version().decode())")"

@@ -1,5 +1,5 @@
 include src/cpp/CPPFImdlp.h
 include src/cpp/typesFImdlp.h
 include src/cpp/Metrics.h
-include src/fimdlp/Factorize.h
-include src/fimdlp/ArffFiles.h
+include src/cpp/Factorize.h
+include src/cpp/ArffFiles.h
