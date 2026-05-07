@@ -1,7 +1,7 @@
 # FImdlp
 [![CI](https://github.com/Doctorado-ML/FImdlp/actions/workflows/main.yml/badge.svg)](https://github.com/Doctorado-ML/FImdlp/actions/workflows/main.yml)
 [![CodeQL](https://github.com/Doctorado-ML/FImdlp/actions/workflows/codeql.yml/badge.svg)](https://github.com/Doctorado-ML/FImdlp/actions/workflows/codeql.yml)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/8b4d784fee13401588aa8c06532a2f6d)](https://www.codacy.com/gh/Doctorado-ML/FImdlp/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Doctorado-ML/FImdlp&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/8b4d784fee13401588aa8c06532a2f6d)](https://app.codacy.com/gh/Doctorado-ML/FImdlp/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![codecov](https://codecov.io/gh/Doctorado-ML/FImdlp/branch/main/graph/badge.svg?token=W8I45B5Z3J)](https://codecov.io/gh/Doctorado-ML/FImdlp)
 [![pypy](https://img.shields.io/pypi/v/FImdlp?color=g)](https://pypi.org/project/FImdlp)
 ![https://img.shields.io/badge/python-3.11%2B-blue](https://img.shields.io/badge/python-3.11%2B-brightgreen)
