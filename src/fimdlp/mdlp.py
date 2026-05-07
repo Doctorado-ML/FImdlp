@@ -66,7 +66,7 @@ class FImdlp(TransformerMixin, BaseEstimator):
             raise ValueError(
                 "Number of features does not match the number of columns in X"
             )
-        if type(self.features_) != list:
+        if not isinstance(self.features_, list):
             raise ValueError("features must be a list")
         self.features_.sort()
         if list(set(self.features_)) != self.features_:
@@ -112,7 +112,8 @@ class FImdlp(TransformerMixin, BaseEstimator):
             else int(self.min_length * X.shape[0])
         )
         self.discretizer_ = [None] * self.n_features_in_
-        # Lazy cache: filled on first call to get_cut_points / get_states_feature
+        # Lazy cache: filled on first call to get_cut_points
+        # / get_states_feature
         self._cut_points_cache_ = [None] * self.n_features_in_
         Parallel(n_jobs=self.n_jobs, prefer="threads")(
             delayed(self._fit_discretizer)(feature)

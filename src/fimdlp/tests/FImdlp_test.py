@@ -51,7 +51,9 @@ class FImdlpTest(unittest.TestCase):
             [0.8, 1.75],
         ]
         expected = [
-            [float(X32[:, f].min())] + intermediate[f] + [float(X32[:, f].max())]
+            [float(X32[:, f].min())]
+            + intermediate[f]
+            + [float(X32[:, f].max())]
             for f in range(4)
         ]
         computed = clf.get_cut_points()
@@ -271,7 +273,8 @@ class FImdlpTest(unittest.TestCase):
         public API, which now exposes the full [vmin, ..., vmax] vector."""
         X32 = X.astype(np.float32)
         return [
-            [float(X32[:, f].min())] + intermediate[f]
+            [float(X32[:, f].min())]
+            + intermediate[f]
             + [float(X32[:, f].max())]
             for f in range(len(intermediate))
         ]
@@ -398,12 +401,8 @@ class FImdlpTest(unittest.TestCase):
         py_cuts = clf.get_cut_points()[0]
         self.assertEqual(py_cuts, list(raw))
         X32 = X[:, 0].astype(np.float32)
-        self.assertAlmostEqual(
-            py_cuts[0], float(X32.min()), delta=self.delta
-        )
-        self.assertAlmostEqual(
-            py_cuts[-1], float(X32.max()), delta=self.delta
-        )
+        self.assertAlmostEqual(py_cuts[0], float(X32.min()), delta=self.delta)
+        self.assertAlmostEqual(py_cuts[-1], float(X32.max()), delta=self.delta)
 
     def test_cut_points_cached_lazily(self):
         """Cut-point cache is empty after fit and populated on first read."""
@@ -437,11 +436,9 @@ class FImdlpTest(unittest.TestCase):
         self.assertEqual(a.shape, X.shape)
 
     def test_transform_out_of_range_values(self):
-        """Values outside [min, max] map to bin 0 / number-of-intermediate-cuts.
+        """Values outside [min, max] map to bin 0 /number-of-intermediate-cuts.
         With sentinels, n_intermediate = len(cuts) - 2."""
-        X = np.array(
-            [[0.0], [1.0], [2.0], [3.0], [4.0], [5.0], [6.0], [7.0]]
-        )
+        X = np.array([[0.0], [1.0], [2.0], [3.0], [4.0], [5.0], [6.0], [7.0]])
         y = np.array([0, 0, 0, 0, 1, 1, 1, 1])
         clf = FImdlp(min_length=3).fit(X, y)
         cuts = clf.get_cut_points()[0]
