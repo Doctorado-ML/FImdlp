@@ -5,6 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-05-07
+
+Packaging-only release. Fixes the Linux wheel platform tag PyPI
+rejected on the 1.0.0 upload (`linux_x86_64`) and reworks the build
+pipeline around `cibuildwheel` so wheels are produced with the
+portable `manylinux2014_x86_64` tag. Also adds Python 3.14 to the
+supported set. No runtime code changes.
+
+### Added
+
+- `cibuildwheel` configuration in `pyproject.toml` (manylinux2014
+  base, CPython 3.11–3.14, Linux x86_64, macOS arm64+x86_64 with
+  `MACOSX_DEPLOYMENT_TARGET=11.0`); musllinux, PyPy and 32-bit
+  targets skipped.
+- New Make targets `sdist`, `wheels`, `build-clean`, `publish-test`
+  and an updated `build`/`publish` flow (see *Changed*).
+- `cibuildwheel` added to the `[dev]` optional dependency group.
+- Manual GitHub Actions workflow `.github/workflows/wheels.yml`
+  (`workflow_dispatch` only) that builds Linux + macOS wheels and an
+  sdist and uploads them as artifacts. **No automatic publishing to
+  PyPI** — release remains a manual `make publish` step.
+- Python 3.14 added to the supported versions: classifier in
+  `pyproject.toml`, `cibuildwheel` build matrix and the CI test
+  matrix in `.github/workflows/main.yml`.
+
+### Changed
+
+- Linux wheels are now produced as `manylinux2014_x86_64` instead of
+  the unportable `linux_x86_64` tag PyPI rejected on the previous
+  upload attempt.
+- Release flow split into independent steps: `make build` produces
+  sdist + wheels for the current platform via `cibuildwheel`, and
+  `make publish` only runs `twine check`/`upload` on the contents of
+  `dist/` (no longer rebuilds). This lets you drop wheels downloaded
+  from the manual GH Actions workflow into `dist/` before publishing
+  without having them wiped.
+- `make wheels` autodetects the available container engine on Linux
+  (Docker preferred, Podman as fallback) and exports
+  `CIBW_CONTAINER_ENGINE` accordingly; aborts early with a clear
+  message if neither is installed.
+
 ## [1.0.0] - 2026-05-07
 
 First stable release. The C++ MDLP core has been replaced with the upstream
@@ -38,23 +79,11 @@ build has been cleaned up for PyPI publishing.
   constructor args, the cut points and the recursion depth, and a helper
   rebuilds the state on unpickle. Required for
   `sklearn.utils.estimator_checks.check_estimator`.
-- New Make targets: `deps`, `sdist`, `wheels`, `build`, `build-clean`,
-  `publish`, `publish-test`, `sample_py`, `sample_cpp`. `make help`
-  prints the full list.
-- Optional dependency group `[dev]` (`build`, `cibuildwheel`, `twine`,
-  `pip-audit`, `black`, `flake8`, `coverage`).
+- New Make targets: `deps`, `publish`, `sample_py`, `sample_cpp`.
+  `make help` prints the full list.
+- Optional dependency group `[dev]` (`build`, `twine`, `pip-audit`,
+  `black`, `flake8`, `coverage`).
 - Sdist (`*.tar.gz`) is now produced alongside the wheel.
-- `cibuildwheel` configuration in `pyproject.toml` (manylinux2014 base,
-  CPython 3.11–3.14, Linux x86_64, macOS arm64+x86_64 with
-  `MACOSX_DEPLOYMENT_TARGET=11.0`); musllinux, PyPy and 32-bit targets
-  skipped.
-- Python 3.14 added to the supported versions: classifier in
-  `pyproject.toml`, cibuildwheel build matrix and the CI test matrix
-  in `.github/workflows/main.yml`.
-- Manual GitHub Actions workflow `.github/workflows/wheels.yml`
-  (`workflow_dispatch` only) that builds Linux + macOS wheels and the
-  sdist and uploads them as artifacts. **No automatic publishing to
-  PyPI** — release remains a manual `make publish` step.
 - Seven new tests covering the C++ transform path, sentinel exposure,
   lazy cache semantics, cache invalidation on `join_fit`, deterministic
   re-`transform`, out-of-range value clamping and state/cut consistency.
@@ -94,18 +123,6 @@ build has been cleaned up for PyPI publishing.
   - PyPI classifier bumped to `Development Status :: 5 - Production/Stable`.
 - `make build` no longer wipes the editable extension; `make test`
   rebuilds the extension automatically if the `.so` is missing.
-- Release flow split into independent steps: `make build` produces
-  sdist + wheels for the current platform via cibuildwheel, and `make
-  publish` only runs `twine check`/`upload` on the contents of `dist/`
-  (no longer rebuilds). This lets you drop wheels downloaded from the
-  manual GH Actions workflow into `dist/` before publishing without
-  having them wiped.
-- Linux wheels are now produced as `manylinux2014_x86_64` instead of
-  the unportable `linux_x86_64` tag PyPI rejects.
-- `make wheels` autodetects the available container engine on Linux
-  (Docker preferred, Podman as fallback) and exports
-  `CIBW_CONTAINER_ENGINE` accordingly; aborts early with a clear
-  message if neither is installed.
 - README rewritten: PyPI install instructions, dev workflow, full Make
   target table, Python and C++ sample usage with options.
 - CI: dropped Windows from the test matrix; CodeQL action upgraded to
